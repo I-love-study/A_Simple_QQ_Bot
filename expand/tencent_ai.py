@@ -6,8 +6,8 @@ import base64
 import aiohttp
 from urllib.parse import urlencode
 
-app_id=2122383099
-app_key='V8JA3DZPk2yebpLG'
+app_id=
+app_key=''
 tx_headers = {"Content-Type":"application/x-www-form-urlencoded"}
 
 def sign(req_data):#腾讯Ai的sign计算
