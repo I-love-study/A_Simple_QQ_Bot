@@ -1,4 +1,5 @@
 from graia.broadcast.builtin.decoraters import Depend
+from graia.broadcast.exceptions import ExecutionStop
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
 from graia.application.message.elements.internal import Plain, At, Image, Source
@@ -16,6 +17,7 @@ import aiohttp
 import aiofiles
 import datetime
 import time
+import re
 import ujson as json
 from pathlib import Path
 
@@ -31,10 +33,13 @@ pixiv_headers = {
     'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
     }
 
+all_send = []
+
 bcc = get.bcc()
 @bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message)],
 							dispatchers = [Kanata([FullMatch('涩图来')])])
 async def setu(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
+    global call, all_send
     if not config['power']:
         await app.sendGroupMessage(group, Template('打烊了').render())
         return
@@ -42,14 +47,16 @@ async def setu(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
     d_time = datetime.datetime.fromisoformat(str(datetime.date.today())+'T06:30')
     d_time1 =  datetime.datetime.fromisoformat(str(datetime.date.today())+'T23:00')
     n_time = datetime.datetime.now()
-    if not d_time <= n_time <= d_time1 or config['overtime']:
+    if not (d_time <= n_time <= d_time1 or config['overtime']):
     	await app.sendGroupMessage(group, Template('爬，我要睡觉').render())
     	return
+
+    call[group.id].append({'q_id': member.id, 'time':time.time()})
 
     before = time.time() - config['per']
     call[group.id] = [d for d in call[group.id] if d['time'] >= before]
 
-    if call[group.id] >= config['global_speed']:
+    if len(call[group.id]) >= config['global_speed']:
         await app.sendGroupMessage(group, Template('你们都太快了，不要冲坏了身体').render())
 
     q_ids = [single['q_id'] for single in call[group.id]]
@@ -58,36 +65,35 @@ async def setu(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
         await app.sendGroupMessage(group, Template('你太快了，不要冲坏了身体').render())
         return
 
-    call[group.id].append({'q_id': member.id, 'time':time.time()})
-
     if len(parmas := message.asDisplay().replace('涩图来', '').strip().split(' ', 2)) == 2:
         command, value = parmas
-    elif param == 1:
-        command = param
-        value = None
+    elif len(parmas) == 1:
+        command = parmas[0]
+        value = ''
     else:
-        command = None
-        value = None
-
+        command = ''
+        value = ''
     if config['ero_from'] == 'local':
         x = 1
         if command == 'tag':
             await app.sendGroupMessage(group, Template('本地涩图哪来的tag啊kora').render(), quote = message.get(Source)[0])
             return
-        elif re.fullmatch('/*[0-9]+', command):
+        elif re.fullmatch(r'\*[0-9]+', command):
             x = int(command.replace('*', ''))
             if x == 0:
                 await app.sendGroupMessage(group, Template('哦').render(), quote = message.get(Source)[0])
                 return
-            elif x >= config['ero_max']:
+            elif x > config['ero_max']:
                 await app.sendGroupMessage(group, Template('要这么多涩图的屑').render(), quote = message.get(Source)[0])
-        send = random.sample(list(Path('setu').iterdir()), 1)[0]
-        m = await app.sendGroupMessage(group, MessageChain.create([Image.fromLocalFile(send)]))
-    elif config['ero_from'] == 'web'
+                return
+        send = random.sample(list(Path('setu').iterdir()), x)
+        setu_mes = [Image.fromLocalFile(se) for se in send]
+        m = await app.sendGroupMessage(group, MessageChain.create(setu_mes))
+    elif config['ero_from'] == 'web':
         parmas = {'apikey' : '829821985f6de98edb9224', 'r18' : 0, 'proxy' : 'disable', 'size1200' : 'true'}
         if command == 'tag' and value:
-            parmas['keyword'] = tag
-        elif re.fullmatch('/*[0-9]*', command):
+            parmas['keyword'] = value
+        elif re.fullmatch(r'\*[0-9]+', command):
             await app.sendGroupMessage(group, MessageChain.create([
                 Plain('我很可爱,请给我钱\n买出国机票,返好看涩图')
                 ]), quote = message.get(Source)[0])
@@ -107,7 +113,7 @@ async def setu(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
 
         async with aiohttp.request("GET", url = j_setu['data'][0]['url'], headers = pixiv_headers) as r:
             setu = await r.read()
-        send = await app.sendGroupMessage(group, MessageChain.create([
+        m = await app.sendGroupMessage(group, MessageChain.create([
             At(target = member.id),
             Plain(text = '\n您要的涩图'),
             Plain(text = f"\npid:{n_setu['pid']}"),
@@ -117,26 +123,27 @@ async def setu(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
             ]), quote = message.get(Source)[0])
 
     if config['revoke']:
+        all_send.append(m)
         await asyncio.sleep(config['revoke'])
-        await app.revokeMessage(target = m)
+        if m in all_send:
+            await app.revokeMessage(target = m)
+            all_send.remove(m)
 
 with open(r'config.json', 'r', encoding = 'UTF-8') as f:
     config = json.load(f)
 
-def admin_judge(member: Member):
-    if member.id not in [1450069615] or member.permission != MemberPerm.Owner:
-        raise ExecutionStop()
-
-@bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message), Depend(admin_judge)],
-                            dispatchers = [Kanata([FullMatch('涩图set'), RequireParam(name = tag)])])
+@bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message), Depend(judge.admin_check)],
+                            dispatchers = [Kanata([FullMatch('涩图set'), RequireParam(name = 'tag')])])
 async def setuset(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
+    global all_send
     if len(params := tag.asDisplay().strip().split(' ', 2)) == 2:
-        command, value = parmas
-    elif param == 1:
-        command = param
+        command, value = params
+    elif len(params) == 1:
+        command = params[0]
     else :
         await app.sendGroupMessage(group, Template('ERROR').render())
 
+    print(command)
     if command == 'info':
         await app.sendGroupMessage(group, MessageChain.create([
             Plain('现在设置为：'),
@@ -145,7 +152,20 @@ async def setuset(app: GraiaMiraiApplication, group: Group, message: MessageChai
             Plain(f"\n涩图来源：{config['ero_from']}"),
             Plain(f"\n群单位时间最大涩图数：{config['global_speed']}"),
             Plain(f"\n用户单位时间最大涩图数：{config['user_speed']}"),
-            Plain(f"\n单位时间：{config['per']}s")
+            Plain(f"\n单位时间：{config['per']}s"),
+            Plain(f"\n用户单次最大涩图请求：{config['ero_max']}")
+            ]))
+    if command == 'help':
+        await app.sendGroupMessage(group, MessageChain.create([
+            Plain('参数：'),
+            Plain(f"\n功能启动：power (on/off)"),
+            Plain(f"\n加班模式：overtime (on/off)"),
+            Plain(f"\n涩图来源：erotype (web/local)"),
+            Plain(f"\n群单位时间最大涩图数：global (*int)"),
+            Plain(f"\n用户单位时间最大涩图数：user (*int)"),
+            Plain(f"\n单位时间：per (*second)"),
+            Plain(f"\n用户单次最大涩图请求：max (*int)"),
+            Plain(f"\n紧急撤回：warn")
             ]))
     elif command == 'power':
         if value == 'on':
@@ -158,6 +178,12 @@ async def setuset(app: GraiaMiraiApplication, group: Group, message: MessageChai
             await app.sendGroupMessage(group, Template('涩图功能已关闭').render())
         else:
             await app.sendGroupMessage(group, Template('未知参数').render())
+    elif command == 'warn':
+        for m in all_send:
+            await app.revokeMessage(target = m)
+            await asyncio.sleep(0.4)
+        all_send.clear()
+        await app.sendGroupMessage(group, Template('已撤回所有已发送涩图').render())
     elif command == 'overtime':
         if value == 'on':
             config['overtime'] = True
@@ -224,6 +250,6 @@ async def setuset(app: GraiaMiraiApplication, group: Group, message: MessageChai
     else:
         await app.sendGroupMessage(group, Template('未知命令').render())
 
-    async def config_update():
-        async with aiofiles.open('config.json', 'w', encoding = 'UTF-8') as f:
-            await f.write(json.dumps(config))
+async def config_update():
+    async with aiofiles.open('config.json', 'w', encoding = 'UTF-8') as f:
+        await f.write(json.dumps(config))
