@@ -1,4 +1,3 @@
-from graia.broadcast.builtin.decoraters import Depend
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
 from graia.application.message.elements.internal import Plain, At, Image
@@ -6,8 +5,9 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch
 from graia.application.group import Group, Member
-from expand import judge
+from core import judge
 from core import get
+
 import aiohttp
 import base64
 import matplotlib
@@ -25,7 +25,7 @@ __plugin_name__ = '新冠病毒查看'
 __plugin_usage__ = '"COVID-19"'
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
                             dispatchers = [Kanata([FullMatch('COVID-19')])])
 async def COVID(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
     back = await get_COVID_19()

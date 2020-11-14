@@ -1,4 +1,3 @@
-from graia.broadcast.builtin.decoraters import Depend
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
 from graia.application.message.elements.internal import Plain, At
@@ -7,7 +6,7 @@ from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch
 from graia.application.group import Group, Member
 from graia.template import Template
-from expand import judge
+from core import judge
 from core import get
 import random
 
@@ -15,7 +14,7 @@ __plugin_name__ = '学习文件下载'
 __plugin_usage__ = '"learn"'
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
                             dispatchers = [Kanata([FullMatch('learn')])])
 async def learn(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
     learning_urls=[
@@ -32,6 +31,8 @@ async def learn(app: GraiaMiraiApplication, group: Group, message: MessageChain,
         'http://oss.fk.houdask.com/sys/v/20/01/d15be5ac6027461794e399402bb8ddec.rar',
         'http://oss.fk.houdask.com/sys/v/20/01/0dd665e49ec24999b772475fbf78a65a.zip']
     if random.randint(0,4) != 0:
-        await app.sendGroupMessage(group, Template("你好惨哦\n没有学习资料看\n可惜了你没抽到呢").render())
+        await app.sendGroupMessage(group, Template(
+            "你好惨哦\n没有学习资料看\n可惜了你没抽到呢").render())
     else:
-        await app.sendGroupMessage(group, Template("学❤习❤资❤料\n请❤勿❤外❤传\n" + learning_urls[random.randint(0,7)]).render())
+        await app.sendGroupMessage(group, Template(
+            "学❤习❤资❤料\n请❤勿❤外❤传\n" + random.choice(learning_urls)).render())

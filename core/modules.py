@@ -1,19 +1,10 @@
-import asyncio
-from graia.broadcast import Broadcast
-from graia.application import GraiaMiraiApplication, Session
-
-import graia.scheduler
-from graia.scheduler import timers
-
 from graia.application.logger import LoggingLogger
 from pathlib import Path
-
 import importlib
 from typing import Any
 
 loaded_plugins = set()
-
-trans_data = {}
+plugin_dir_setting = set()
 
 class Plugin:
     __slots__ = ('module', 'name', 'usage')
@@ -37,8 +28,32 @@ def load_plugin(module_name: Path) -> bool:
         #logger.exception(e)
         return False
 
-def load_plugins(plugin_dir: Path) -> int:
+class Plugin_dir:
+    __slots__ = ('dir_name', 'active_groups', 'negative_groups',
+        'active_members','negative_members')
+
+    def __init__(self, dir_name, active_groups, negative_groups,
+        active_members,negative_members):
+        self.dir_name = dir_name
+        self.active_groups = active_groups
+        self.negative_groups = negative_groups
+        self.active_members = active_members
+        self.negative_members = negative_members
+
+def load_plugins(plugin_dir: Path,
+    active_groups: list = [],
+    negative_groups: list = [],
+    active_members: list = [],
+    negative_members: list = []
+    ) -> int:
+    '''本函数负责导入文件夹内的插件
+    plugin_dir是导入的文件夹（请使用相对位置）
+    active_groups是判断群的，negative_groups同理'''
     count = 0
+    plugin_dir_setting.add(Plugin_dir(
+        '.'.join(plugin_dir.parts), 
+        active_groups, negative_groups, 
+        active_members,negative_members))
     for path in plugin_dir.iterdir():
         if path.name.startswith('_'):
             continue
@@ -51,36 +66,5 @@ def load_plugins(plugin_dir: Path) -> int:
     LoggingLogger().info(f'共导入了 {count} 个插件')
     return count
 
-def init(config_session: Session) -> None:
-    global bcc, sche, app
-    loop = asyncio.get_event_loop()
-    bcc = Broadcast(loop = loop, debug_flag = True)
-    sche = graia.scheduler.GraiaScheduler(loop = loop, broadcast = bcc)
-    app = GraiaMiraiApplication(
-        broadcast = bcc,
-        connect_info = config_session
-    )
 
-def trans(**kwargs) -> None:
-    global trans_data
-    trans_data = kwargs
 
-class get:
-    @staticmethod
-    def app() -> GraiaMiraiApplication:
-        if app is None:
-            raise ValueError('GraiaMiraiApplication 实例尚未初始化')
-        return app
-    @staticmethod
-    def bcc() -> Broadcast:
-        if bcc is None:
-            raise ValueError('Broadcast 实例尚未初始化')
-        return bcc
-    @staticmethod
-    def sche() -> graia.scheduler.GraiaScheduler:
-        if bcc is None:
-            raise ValueError('Scheduler 实例尚未初始化')
-        return sche
-    @staticmethod
-    def trans(get) -> Any:
-        return trans_data[get]

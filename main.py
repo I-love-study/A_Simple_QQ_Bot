@@ -11,8 +11,7 @@ if __name__ == '__main__':
         debug_flag = True
         )
     )
-    core.trans(active_groups = [1009529133,904763352])
-    core.load_plugins(Path('entertain'))
+    core.load_plugins(Path('entertain'), active_groups = [1009529133,904763352])
     app = core.get.app()
     while True:
         try:

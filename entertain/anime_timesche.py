@@ -1,4 +1,3 @@
-from graia.broadcast.builtin.decoraters import Depend
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
 from graia.application.message.elements.internal import Plain, At, Image
@@ -6,8 +5,7 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch, RequireParam
 from graia.application.group import Group, Member
-from graia.template import Template
-from expand import judge
+from core import judge
 from core import get
 
 import aiohttp
@@ -16,7 +14,7 @@ import time
 __plugin_name__ = '番剧时刻表'
 __plugin_usage__ = 'anime/anime tomorrow/anime yesterday'
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
 							dispatchers = [Kanata([FullMatch('anime'), RequireParam(name = 'tag')])])
 async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
 	tag = tag.asDisplay().strip()

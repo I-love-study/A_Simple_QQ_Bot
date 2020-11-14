@@ -7,8 +7,9 @@ from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch, RequireParam
 from graia.application.group import Group, Member
 from graia.template import Template
-from expand import judge
+from core import judge
 from core import get
+
 import time, urllib
 from lxml import etree
 import aiohttp
@@ -31,7 +32,7 @@ with open(Path(__file__).parent / 'dd_info.yml', 'r', encoding = 'UTF-8') as f:
 
 bcc = get.bcc()
 
-@bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message)])
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
 async def hololive(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
     get = message.asDisplay().strip().split(' ')
     if get[0] == 'hololive':
@@ -51,7 +52,7 @@ async def hololive(app: GraiaMiraiApplication, group: Group, message: MessageCha
     except Exception:
         await app.sendGroupMessage(group, MessageChain.create([Plain('Oops,出现了点问题导致信息无法发送')]))
 
-@bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message)])
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
 async def Hanayori(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
     get = message.asDisplay().strip().split(' ')
     if get[0] in ['花寄','花寄女子寮','花寄女生宿舍']:
@@ -71,7 +72,7 @@ async def Hanayori(app: GraiaMiraiApplication, group: Group, message: MessageCha
     except Exception:
         await app.sendGroupMessage(group, MessageChain.create([Plain('Oops,出现了点问题导致信息无法发送')]))
 
-@bcc.receiver(GroupMessage, headless_decoraters = [Depend(judge.active_check_message)])
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
 async def amazing_paryi(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
     get = message.asDisplay().strip().split(' ')
     if get[0] in ['Paryi的奇妙关系','帕里的奇妙关系','帕里全家福']:
