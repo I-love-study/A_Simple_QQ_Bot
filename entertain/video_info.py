@@ -15,15 +15,16 @@ __plugin_usage__ = '发送任意av/BV号获取视频信息'
 bcc = get.bcc()
 @bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
 async def video_info(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
-    if message.asDisplay().startswith(('av','AV','Av')):
+    msg_str = message.asDisplay().strip()
+    if msg_str.startswith(('av','AV','Av')):
         try:
             id_type = 'aid'
-            num = int(re.sub('av', '', message.asDisplay(), flags = re.I))
+            num = int(re.sub('av', '', msg_str, flags = re.I))
         except ValueError:
             return
-    elif message.asDisplay().startswith('BV') and len(msg) == 12:
+    elif msg_str.startswith('BV') and len(msg_str) == 12:
         id_type = 'bvid'
-        num = message.asDisplay()
+        num = msg_str
     else:
         return
 

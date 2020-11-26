@@ -30,7 +30,7 @@ async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
             return
         reponse = await r.text()
 
-    page=etree.HTML(reponse)
+    page = etree.HTML(reponse)
     if page.xpath('//div[@class="lemmaWgt-subLemmaListTitle"]//text()') != []:
         if len(tags) == 1:
             catalog = page.xpath('//div[@class="para" and @label-module="para"]/a/text()')
