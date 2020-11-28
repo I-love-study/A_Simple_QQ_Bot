@@ -1,17 +1,13 @@
-from graia.broadcast.builtin.decoraters import Depend
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, At, Image
+from graia.application.message.elements.internal import Plain, Image
 from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
 from graia.application.group import Group, Member
 from graia.template import Template
 from core import judge
 from core import get
 
-import time, urllib
-from lxml import etree
+import time
 import aiohttp
 import asyncio
 import yaml
@@ -40,10 +36,10 @@ async def hololive(app: GraiaMiraiApplication, group: Group, message: MessageCha
     else:
         return
     if do in ["live", "直播"]:
-        status = await live_status_send(dd_data['Hololive']['room_id'])
+        status = await get_lives(dd_data['Hololive']['room_id'])
         mes = MessageChain.create(status if status else [Plain('没有Hololive成员直播')])
     elif do in ["video", "视频"]:
-        status = await get_ids_videos(dd_data['Hololive']['mid'])
+        status = await get_videos(dd_data['Hololive']['mid'])
         mes = MessageChain.create(status if status else [Plain('Hololive成员没有更新视频')])
     else:
         mes = Template('你倒是说视频还是直播啊kora').render()
@@ -60,10 +56,10 @@ async def Hanayori(app: GraiaMiraiApplication, group: Group, message: MessageCha
     else:
         return
     if do in ["live", "直播"]:
-        status = await live_status_send(dd_data['Hanayori']['room_id'])
+        status = await get_lives(dd_data['Hanayori']['room_id'])
         mes = MessageChain.create(status if status else [Plain('没有花寄女子寮成员直播')])
     elif do in ["video", "视频"]:
-        status = await get_ids_videos(dd_data['Hanayori']['mid'])
+        status = await get_videos(dd_data['Hanayori']['mid'])
         mes = MessageChain.create(status if status else [Plain('花寄女子寮成员没有更新视频')])
     else:
         mes = Template('你倒是说视频还是直播啊kora').render()

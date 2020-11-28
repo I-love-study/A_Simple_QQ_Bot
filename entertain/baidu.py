@@ -1,15 +1,14 @@
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, At, Image
+from graia.application.message.elements.internal import Plain, Image
 from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch, RequireParam
 from graia.application.group import Group, Member
 from core import judge
 from core import get
-import aiohttp, time, urllib
+import aiohttp, urllib
 from lxml import etree
-import base64
 
 __plugin_name__ = '百度system'
 __plugin_usage__ = '"百科 [参数]" 和 "热点"'
@@ -22,6 +21,7 @@ bcc = get.bcc()
                             dispatchers = [Kanata([FullMatch('百科'), RequireParam(name = 'tag')])])
 async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
     tags = tag.asDisplay().strip().split(' ',1)
+    
     bdurl = f'https://baike.baidu.com/item/{urllib.parse.quote(tags[0])}?force=1'
     async with aiohttp.request("GET", bdurl, headers = headers, allow_redirects = True) as r:
         if str(r.url) == 'https://baike.baidu.com/error.html':
@@ -63,12 +63,12 @@ async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
 
 @bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
                             dispatchers = [Kanata([FullMatch('热点')])])
-async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
+async def bdrd(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
     url="http://top.baidu.com/buzz?b=1&fr=topindex"
     async with aiohttp.request("GET",url,headers = headers) as r:
         reponse = await r.text(encoding = 'gb2312')
     html = etree.HTML(reponse)
     get = html.xpath('//a[@class="list-title"]/text()')
-    get = [f"{n+1}.{get[a]}" for a in range(len(get))]
+    get = [f"{n+1}.{get[n]}" for n in range(len(get))]
     await app.sendGroupMessage(group, MessageChain.create([
         Plain('\n'.join(get[0:10]))]))

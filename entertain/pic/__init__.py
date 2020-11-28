@@ -9,8 +9,6 @@ from core import get
 import aiohttp
 from PIL import Image as IMG
 from io import BytesIO
-import base64
-import re
 
 __plugin_name__ = '咋回事小老弟'
 __plugin_usage__ = '@一个人说一句小老弟试试'

@@ -6,7 +6,7 @@ import base64
 import aiohttp
 from urllib.parse import urlencode
 
-app_id=
+app_id=0
 app_key=''
 tx_headers = {"Content-Type":"application/x-www-form-urlencoded"}
 

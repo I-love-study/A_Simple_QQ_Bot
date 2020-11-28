@@ -1,0 +1,10 @@
+matplotlib==3.3.2
+ujson==4.0.1
+numpy==1.19.3
+aiofiles==0.6.0
+aiohttp==3.7.2
+tqdm==4.51.0
+lxml==4.6.1
+Pillow==8.0.1
+pycryptodome==3.9.9
+PyYAML==5.3.1

@@ -1,18 +1,17 @@
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, At
+from graia.application.message.elements.internal import Plain
 from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch
+from graia.application.message.parser.signature import RegexMatch
 from graia.application.group import Group, Member
 from core import judge
 from core import get
 import core
-import random
 
 bcc = get.bcc()
 @bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
-							dispatchers = [Kanata([FullMatch('helper')])])
+							dispatchers = [Kanata([RegexMatch('helper.*')])])
 async def helper(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
 	tag = message.asDisplay().replace('helper','').strip()
 	ret = []

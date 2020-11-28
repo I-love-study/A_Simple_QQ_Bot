@@ -3,7 +3,6 @@ from graia.application.event.messages import GroupMessage
 from graia.application.message.elements.internal import Plain, At
 from graia.application.message.chain import MessageChain
 from graia.application.group import Group, Member
-#from graia.application.exceptions import 
 from core import judge
 from core import get
 

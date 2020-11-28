@@ -5,6 +5,7 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import RegexMatch
 from graia.application.group import Group, Member
+from graia.template import Template
 from core import judge
 from core import get
 
@@ -37,8 +38,10 @@ async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain,
 		final_draw = ImageDraw.Draw(final_back)
 		for single in back:
 			async with session.get(single['square_cover']) as f:
-				pic = await f.read()
-			final_back.paste(IMG.open(BytesIO(pic)), (30,30+300*n,270,270+300*n))
+				pic = IMG.open(BytesIO(await f.read()))
+			if pic.size != (240, 240):
+				pic = pic.resize((240, 240), IMG.ANTIALIAS)
+			final_back.paste(pic, (30,30+300*n,270,270+300*n))
 			
 			ttf = ImageFont.truetype('C:/windows/fonts/SimHei.ttf', 60)
 			ellipsis_size = ttf.getsize('...')[0]
