@@ -38,7 +38,7 @@ import objgraph
 import random
 
 def test(group: Group):
-    if group.id not in [active_group]:
+    if group.id not in active_group:
         raise ExecutionStop()
 
 @bcc.receiver(GroupMessage,
