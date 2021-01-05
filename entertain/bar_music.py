@@ -1,6 +1,6 @@
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, At, Image
+from graia.application.message.elements.internal import *
 from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch, RequireParam

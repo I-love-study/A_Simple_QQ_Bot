@@ -1,23 +1,27 @@
 from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, Image
+from graia.application.message.elements.internal import *
 from graia.application.message.chain import MessageChain
+from graia.application.message.parser.kanata import Kanata
+from graia.application.message.parser.signature import FullMatch, RequireParam
 from graia.application.group import Group, Member
-from graia.template import Template
 from core import judge
 from core import get
 
 import time
+from io import BytesIO
 import aiohttp
 import asyncio
 import yaml
 from pathlib import Path
+from PIL import Image as IMG
+from itertools import product
+from operator import itemgetter
+import math
 
 __plugin_name__ = 'Super DD'
-__plugin_usage__ = '''/hololive [参数]
-/花寄 或/花寄女子寮 或/花寄女生宿舍 [参数]
-/Paryi的奇妙关系 或/帕里的奇妙关系 或/帕里全家福 [参数]
-参数为video或live'''
+__plugin_usage__ = '''输入 '直播 [Hololive/Hanayori/Paryi_hop]'
+或者 监控室 [Hololive/Hanayori/Paryi_hop]'''
 
 headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
                        'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
@@ -28,111 +32,121 @@ with open(Path(__file__).parent / 'dd_info.yml', 'r', encoding = 'UTF-8') as f:
 
 bcc = get.bcc()
 
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
-async def hololive(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
-    get = message.asDisplay().strip().split(' ')
-    if get[0] == 'hololive':
-        do = get[1] if len(get) == 2 else None
-    else:
+@bcc.receiver(
+    GroupMessage,
+    headless_decoraters = [judge.group_check(__name__)],
+    dispatchers = [Kanata([FullMatch('直播 '), RequireParam('tag')])])
+async def dd_watch(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
+    name = tag.asDisplay().strip()
+    print(name)
+    if name not in dd_data:
+        await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return
-    if do in ["live", "直播"]:
-        status = await get_lives(dd_data['Hololive']['room_id'])
-        mes = MessageChain.create(status if status else [Plain('没有Hololive成员直播')])
-    elif do in ["video", "视频"]:
-        status = await get_videos(dd_data['Hololive']['mid'])
-        mes = MessageChain.create(status if status else [Plain('Hololive成员没有更新视频')])
-    else:
-        mes = Template('你倒是说视频还是直播啊kora').render()
-    try:
-        await app.sendGroupMessage(group, mes)
-    except Exception:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('Oops,出现了点问题导致信息无法发送')]))
-
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
-async def Hanayori(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
-    get = message.asDisplay().strip().split(' ')
-    if get[0] in ['花寄','花寄女子寮','花寄女生宿舍']:
-        do = get[1] if len(get) == 2 else None
-    else:
-        return
-    if do in ["live", "直播"]:
-        status = await get_lives(dd_data['Hanayori']['room_id'])
-        mes = MessageChain.create(status if status else [Plain('没有花寄女子寮成员直播')])
-    elif do in ["video", "视频"]:
-        status = await get_videos(dd_data['Hanayori']['mid'])
-        mes = MessageChain.create(status if status else [Plain('花寄女子寮成员没有更新视频')])
-    else:
-        mes = Template('你倒是说视频还是直播啊kora').render()
-    try:
-        await app.sendGroupMessage(group, mes)
-    except Exception:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('Oops,出现了点问题导致信息无法发送')]))
-
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
-async def amazing_paryi(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
-    get = message.asDisplay().strip().split(' ')
-    if get[0] in ['Paryi的奇妙关系','帕里的奇妙关系','帕里全家福']:
-        do = get[1] if len(get) == 2 else None
-    else:
-        return
-    if do in ["live", "直播"]:
-        status = await get_lives(dd_data['Paryi_hop']['room_id'])
-        mes = MessageChain.create(status if status else [Plain('Paryi家啥也没干，淦')])
-    elif do in ["video", "视频"]:
-        status = await get_videos(dd_data['Paryi_hop']['mid'])
-        mes = MessageChain.create(status if status else [Plain('Paryi家视频也没有啊')])
-    else:
-        mes = Template('你倒是说视频还是直播啊').render()
-    try:
-        await app.sendGroupMessage(group, mes)
-    except Exception:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('Oops,出现了点问题导致信息无法发送')]))
-
-async def get_lives(ids):
     status_api = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id="
-    conn = aiohttp.TCPConnector(limit = 5)
+    conn = aiohttp.TCPConnector(limit = 5)#防爆毙
     async with aiohttp.ClientSession(connector = conn) as session:
-        tasks = [fench(session, status_api + str(live_id)) for live_id in ids]
+        tasks = [fench(session, f'{status_api}{live_id}') for live_id in dd_data[name]['room_id']]
         lives = await asyncio.gather(*tasks)
-    if lives:
-        send = [Plain('正在直播的有:')]
-        for live in lives:
-            if live['data']['room_info']['live_status'] == 1:
-                start_time = live['data']['room_info']['live_start_time']
-                send.extend([Plain(f"\n{live['data']['anchor_info']['base_info']['uname']}"),
-                             Plain(f"\n{live['data']['room_info']['title']}"),
-                             Plain(f"\nhttps://live.bilibili.com/{live['data']['room_info']['room_id']}"),
-                             Plain(f"\n开播时间："),
-                             Plain(f"\n{time.strftime('%Y.%m.%d %H:%M:%S',time.gmtime(start_time))}"),
-                            ])
-        return send
+        send = []
+    for live in lives:
+        if live['data']['room_info']['live_status'] == 1:
+            start_time = live['data']['room_info']['live_start_time']
+            send.extend([
+                Plain(f"\n{live['data']['anchor_info']['base_info']['uname']}"),
+                Plain(f"\n{live['data']['room_info']['title']}"),
+                Plain(f"\nhttps://live.bilibili.com/{live['data']['room_info']['room_id']}"),
+                Plain(f"\n开播时间："),
+                Plain(f"\n{time.strftime('%Y.%m.%d %H:%M:%S',time.gmtime(start_time))}"),
+                ])
+    mes = MessageChain.create([Plain('正在直播的有:'),*send] if send else [Plain(f'没有{name}成员直播')])
+    await app.sendGroupMessage(group, mes)
 
-async def get_videos(ids):
-    url = "https://api.bilibili.com/x/space/arc/search?mid={mid}&pn=1&ps={ps}&jsonp=jsonp"
-    conn = aiohttp.TCPConnector(limit = 5)
+@bcc.receiver(
+    GroupMessage,
+    headless_decoraters = [judge.group_check(__name__)],
+    dispatchers = [Kanata([FullMatch('监控室 '), RequireParam('tag')])])
+async def dd_monitor(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
+    name = tag.asDisplay().strip()
+    if name not in dd_data:
+        await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
+        return
+    status_api = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id="
+    conn = aiohttp.TCPConnector(limit = 5)#防爆毙
     async with aiohttp.ClientSession(connector = conn) as session:
-        tasks = [fench(session, url.format(mid = mid, ps = 10)) for mid in ids]
+        tasks = [fench(session, f'{status_api}{live_id}') for live_id in dd_data[name]['room_id']]
+        lives = await asyncio.gather(*tasks)
+        tasks = [fench(session, live['data']['room_info']['keyframe'], ret='read')
+                for live in lives if live['data']['room_info']['live_status'] == 1]
+        if tasks:
+            pics_data = await asyncio.gather(*tasks)
+        else:
+            await app.sendGroupMessage(group, MessageChain.create([Plain(f'没有{name}成员直播')]))
+            return
+
+    frame = int(math.ceil(len(pics_data)**0.5))
+    frame = (frame, int(math.ceil(len(pics_data)/frame)))
+    final_back = IMG.new("RGB", (1280*frame[0], 720*frame[1]), (0,0,0))
+    length = len(pics_data)
+    for h, w in product(range(frame[0]),range(frame[1])):
+        if (n := frame[1]*h+w) < length:
+            pic = IMG.open(BytesIO(pics_data[n]))
+            if pic.size != (1280, 720):
+                pic = pic.resize((1280, 720), IMG.ANTIALIAS)
+            final_back.paste(pic, (1280*w,720*h))
+        else:
+            break
+    out = BytesIO()
+    final_back.save(out, format='JPEG', quality = 80)
+    await app.sendGroupMessage(group, MessageChain.create([
+        Image.fromUnsafeBytes(out.getvalue())]))
+
+@bcc.receiver(
+    GroupMessage,
+    headless_decoraters = [judge.group_check(__name__)],
+    dispatchers = [Kanata([FullMatch('视频 '), RequireParam('tag')])])
+async def dd_video(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
+    name = tag.asDisplay().strip()
+    if name not in dd_data:
+        await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
+        return
+    conn = aiohttp.TCPConnector(limit = 5)#防爆毙
+    async with aiohttp.ClientSession(connector = conn) as session:
+        tasks = [get_videos(session, mid, 6*60*60) for mid in dd_data[name]['mid']]
         user_videos = await asyncio.gather(*tasks)
-    videos = [video for videos in user_videos for video in videos['data']['list']['vlist']]
-    videos = [video for video in videos if video['created'] >= int(time.time())-6*60*60]
-    videos = sorted(videos, key = lambda videos:videos['created'])
-    if videos:
-        for video in videos:
-            send = [Plain('近6小时视频：\n')]
+    user_videos = [video for videos in user_videos for video in videos]
+    if user_videos:
+        send = [Plain('近6小时视频：\n')]
+        user_videos.sort(key = itemgetter('created'))
+        for video in user_videos:
             play_time = time.strftime("%Y.%m.%d %H:%M:%S", time.gmtime(video['created']))
             send.extend([Plain(f"\n{video['author']}{'等' if video['is_union_video'] else ''}"),
                          Plain(f"\n{video['title']}"),
                          Plain(f"\nhttps://www.bilibili.com/video/av{video['aid']}"),
                          Plain(f"\n发布时间:{play_time}\n")
-                        ]) 
-        return send
+                        ])
+        await app.sendGroupMessage(group, MessageChain.create(send))
+    else:
+        await app.sendGroupMessage(group, MessageChain.create([Plain('好家伙,他们一个也没更新')]))
 
-async def get_video(bilibili_id, ps):
-    url="https://api.bilibili.com/x/space/arc/search?mid={}&pn=1&ps={}&jsonp=jsonp".format(bilibili_id,ps)
-    async with aiohttp.request("GET",url,headers=headers) as r:
-        reponse = await r.json()
-        return reponse['data']['list']['vlist']
+async def get_videos(session, mid, last_time):
+    n = 1
+    url = "https://api.bilibili.com/x/space/arc/search?mid={mid}&pn={n}&ps=10&jsonp=jsonp"
+    ret = []
+    while True:
+        async with session.get(url.format(mid=mid, n=n)) as r:
+            js = await r.json()
+        print(js)
+        for video in js['data']['list']['vlist']:
+            if video['created'] >= int(time.time())-last_time:
+                ret.append(video)
+            elif video['is_union_video']:
+                break
+            n+=1
+    return ret
 
-async def fench(session, url, **kwargs):
+async def fench(session, url, ret = 'json', **kwargs):
     async with session.get(url, **kwargs) as r:
-        return await r.json()
+        if ret == 'json':
+            return await r.json()
+        elif ret == 'read':
+            return await r.read()

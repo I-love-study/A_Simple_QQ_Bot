@@ -9,8 +9,6 @@ from core import judge
 from core import get
 
 import aiohttp
-import matplotlib
-matplotlib.set_loglevel('info')
 import matplotlib.pyplot as plt
 import platform
 import numpy as np
