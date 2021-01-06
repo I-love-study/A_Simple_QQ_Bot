@@ -8,6 +8,7 @@ from core import get
 
 import aiohttp
 from PIL import Image as IMG
+from pathlib import Path
 from io import BytesIO
 
 __plugin_name__ = '咋回事小老弟'
@@ -17,7 +18,7 @@ bcc = get.bcc()
 @bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
 async def xiaolaodi(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
     if '小老弟' in message.asDisplay() and message.has(At):
-        xiaolaodi = IMG.open(r'./entertain/pic/小老弟.png')
+        xiaolaodi = IMG.open(Path(__file__).parent/'小老弟.png')
         if (at_u := message.get(At)[0].target) == app.connect_info.account:
             text = '我哪里像小老弟了,小老弟'
             to = member.id
