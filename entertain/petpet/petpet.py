@@ -55,11 +55,14 @@ def make_petpet(file, squish=0):
 		gif_frame.paste(hand, (0, int(squish * squish_translation_factor[i])), hand)
 		gifs.append(gif_frame)
 	ret = BytesIO()
-	gifs[0].save(ret,format='gif', save_all=True, append_images=gifs, duration=0.1)
+	gifs[0].save(
+		ret,format='gif',
+		save_all=True, append_images=gifs,
+		duration=0.05, transparency=0)
 	return ret.getvalue()
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
 							dispatchers = [Kanata([FullMatch('摸头'), OptionalParam('para')])])
 async def petpet(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, para):
 	user = para.get(At)[0].target if para and para.has(At) else member.id

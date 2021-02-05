@@ -14,7 +14,7 @@ __plugin_name__ = '学习文件下载'
 __plugin_usage__ = '"learn"'
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
                             dispatchers = [Kanata([FullMatch('learn')])])
 async def learn(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
     learning_urls=[

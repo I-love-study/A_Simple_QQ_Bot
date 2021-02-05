@@ -15,7 +15,7 @@ __plugin_name__ = '语音听歌'
 __plugin_usage__ = 'bar_music [歌曲名字]'
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
 							dispatchers = [Kanata([FullMatch('bar_music'), RequireParam(name = 'tag')])])
 async def bar_music(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
 	if tag.asDisplay().strip() == '':

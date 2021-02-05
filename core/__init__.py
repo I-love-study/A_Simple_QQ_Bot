@@ -2,13 +2,14 @@ import asyncio
 from graia.broadcast import Broadcast
 from graia.application import GraiaMiraiApplication, Session
 from graia.broadcast.interrupt import InterruptControl
-import graia.scheduler
 
-import logging
-logging.basicConfig(format="[%(asctime)s][%(levelname)s]: %(message)s", level=logging.INFO)
+import graia.scheduler
 
 from .modules import *
 from .judge import *
+
+import logging
+logging.basicConfig(format="[%(asctime)s][%(levelname)s]: %(message)s", level=logging.INFO)
 
 def init(config_session: Session) -> None:
     global bcc, sche, app, inc
@@ -17,8 +18,8 @@ def init(config_session: Session) -> None:
     sche = graia.scheduler.GraiaScheduler(loop = loop, broadcast = bcc)
     inc = InterruptControl(bcc)
     app = GraiaMiraiApplication(
-        broadcast=bcc,
-        connect_info=config_session,
+        broadcast = bcc,
+        connect_info = config_session,
         logger=logging.getLogger('graia'),
         group_message_log_format = '[{group_name}] {member_name}({member_permission}) -> {message_string}'
     )

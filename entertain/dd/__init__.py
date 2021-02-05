@@ -34,7 +34,7 @@ bcc = get.bcc()
 
 @bcc.receiver(
     GroupMessage,
-    headless_decoraters = [judge.group_check(__name__)],
+    headless_decoraters = [judge.config_check(__name__)],
     dispatchers = [Kanata([FullMatch('直播 '), RequireParam('tag')])])
 async def dd_watch(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
     name = tag.asDisplay().strip()
@@ -63,7 +63,7 @@ async def dd_watch(app: GraiaMiraiApplication, group: Group, member: Member, mes
 
 @bcc.receiver(
     GroupMessage,
-    headless_decoraters = [judge.group_check(__name__)],
+    headless_decoraters = [judge.config_check(__name__)],
     dispatchers = [Kanata([FullMatch('监控室 '), RequireParam('tag')])])
 async def dd_monitor(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
     name = tag.asDisplay().strip()
@@ -102,7 +102,7 @@ async def dd_monitor(app: GraiaMiraiApplication, group: Group, member: Member, m
 
 @bcc.receiver(
     GroupMessage,
-    headless_decoraters = [judge.group_check(__name__)],
+    headless_decoraters = [judge.config_check(__name__)],
     dispatchers = [Kanata([FullMatch('视频 '), RequireParam('tag')])])
 async def dd_video(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
     name = tag.asDisplay().strip()

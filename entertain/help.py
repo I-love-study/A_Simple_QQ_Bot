@@ -10,7 +10,7 @@ from core import get
 import core
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
 							dispatchers = [Kanata([RegexMatch('helper.*')])])
 async def helper(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
 	tag = message.asDisplay().replace('helper','').strip()

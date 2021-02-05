@@ -15,7 +15,7 @@ __plugin_name__ = '咋回事小老弟'
 __plugin_usage__ = '@一个人说一句小老弟试试'
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)])
 async def xiaolaodi(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
     if '小老弟' in message.asDisplay() and message.has(At):
         xiaolaodi = IMG.open(Path(__file__).parent/'小老弟.png')

@@ -17,7 +17,7 @@ from io import BytesIO
 __plugin_name__ = '番剧时刻表'
 __plugin_usage__ = 'anime/anime tomorrow/anime yesterday'
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
 							dispatchers = [Kanata([FullMatch('anime'), OptionalParam('para')])])
 async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, para):
 	today = int(datetime.fromisoformat(date.today().isoformat()).timestamp())

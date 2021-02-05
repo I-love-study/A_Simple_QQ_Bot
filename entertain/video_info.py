@@ -13,7 +13,7 @@ __plugin_name__ = 'B站视频信息查看'
 __plugin_usage__ = '发送任意av/BV号获取视频信息'
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)])
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)])
 async def video_info(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
     msg_str = message.asDisplay().strip()
     if msg_str.startswith(('av','AV','Av')):

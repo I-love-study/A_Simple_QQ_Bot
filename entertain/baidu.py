@@ -17,7 +17,7 @@ headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53
                        'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
                             dispatchers = [Kanata([FullMatch('百科'), RequireParam(name = 'tag')])])
 async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
     tags = tag.asDisplay().strip().split(' ',1)
@@ -61,7 +61,7 @@ async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
 
     await app.sendGroupMessage(group, MessageChain.create(mes))
 
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
                             dispatchers = [Kanata([FullMatch('热点')])])
 async def bdrd(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
     url="http://top.baidu.com/buzz?b=1&fr=topindex"

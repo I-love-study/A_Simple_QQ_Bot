@@ -15,7 +15,7 @@ __plugin_name__ = '番剧详细信息'
 __plugin_usage__ = 'bangumi [你要搜索的参数]'
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
 							dispatchers = [Kanata([FullMatch('bangumi'), RequireParam('tag')])])
 async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
 	bangumi_headers = {

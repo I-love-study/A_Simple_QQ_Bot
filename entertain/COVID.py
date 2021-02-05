@@ -10,19 +10,15 @@ from core import get
 
 import aiohttp
 import matplotlib.pyplot as plt
-import platform
+import matplotlib.font_manager as fm
 import numpy as np
 from io import BytesIO
-if platform.system() == 'Windows':
-    plt.rcParams['font.sans-serif'] = ['SimHei']
-elif platform.system() == 'Linux':
-    plt.rcParams['font.sans-serif'] = ['WenQuanYi Zen Hei']
 
 __plugin_name__ = '新冠病毒查看'
 __plugin_usage__ = '"COVID-19"'
 
 bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.group_check(__name__)],
+@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
                             dispatchers = [Kanata([FullMatch('COVID-19')])])
 async def COVID(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
     back = await get_COVID_19()
@@ -48,6 +44,7 @@ async def get_COVID_19(Pic=True):
     if Pic:
         # 创建一个点数为 8 x 6 的窗口, 并设置分辨率为 80像素/每英寸
         plt.figure(figsize=(30, 20), dpi=100)
+        font = fm.FontProperties(fname='src/font/SourceHanSans-Medium.otf')
         plt.style.use("dark_background")
         # 再创建一个规格为 1 x 1 的子图
         # plt.subplot(1, 1, 1)
@@ -61,11 +58,11 @@ async def get_COVID_19(Pic=True):
         plt.bar(index, y1, width, label="昨日累计人数", color="#FF0000")
         plt.bar(index, y2, width, label="今日新增人数", color="#FF8C00",bottom=y1)
         # 设置横轴标签
-        plt.xlabel('各个国家')
+        plt.xlabel('各个国家', fontproperties=font)
         # 设置纵轴标签
-        plt.ylabel('累计感染人数')
+        plt.ylabel('累计感染人数', fontproperties=font)
         # 添加标题
-        plt.title('各国新冠病毒感染人数排行')
+        plt.title('各国新冠病毒感染人数排行', fontproperties=font)
         # 添加纵横轴的刻度
         plt.xticks(index, x)
         # 添加图例
