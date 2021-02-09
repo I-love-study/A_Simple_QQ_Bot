@@ -105,3 +105,6 @@ fromLocalFile | 从本地文件创建 | 支持str和pathlib.Path 实例
 fromUnsafeBytes | 从二进制数据创建 | 支持任意bytes
 fromUnsafePath | 让`Mirai-api-htp`从本地文件创建 | 支持str和pathlib.Path
 fromNetworkAddress | 从网络创建 | 支持str
+
+而FlashImage的发送方法，就是再加一个`asFlash()`  
+e.g: `Image.fromLocalFile("./flashimage.png").asFlash()`
