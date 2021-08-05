@@ -5,8 +5,8 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch, RequireParam
 from graia.application.group import Group, Member
-from core import judge
-from core import get
+from graia.saya import Channel
+from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 import time
 from io import BytesIO
@@ -19,26 +19,23 @@ from itertools import product
 from operator import itemgetter
 import math
 
-__plugin_name__ = 'Super DD'
-__plugin_usage__ = '''输入 '直播 [Hololive/Hanayori/Paryi_hop]'
-或者 监控室 [Hololive/Hanayori/Paryi_hop]'''
-
 headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
                        'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
 
+channel = Channel.current()
 
-with open(Path(__file__).parent / 'dd_info.yml', 'r', encoding = 'UTF-8') as f:
-    dd_data = yaml.safe_load(f.read())
+channel.name("DDSystem")
+channel.description('''输入 '直播 [Hololive/Hanayori/Paryi_hop]'
+或者 监控室 [Hololive/Hanayori/Paryi_hop]''')
+channel.author("I_love_study")
 
-bcc = get.bcc()
-
-@bcc.receiver(
-    GroupMessage,
-    headless_decoraters = [judge.config_check(__name__)],
-    dispatchers = [Kanata([FullMatch('直播 '), RequireParam('tag')])])
-async def dd_watch(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Kanata([FullMatch('直播 '), RequireParam('tag')])]
+    ))
+async def dd_watch(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
+    dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
     name = tag.asDisplay().strip()
-    print(name)
     if name not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return
@@ -61,13 +58,13 @@ async def dd_watch(app: GraiaMiraiApplication, group: Group, member: Member, mes
     mes = MessageChain.create([Plain('正在直播的有:'),*send] if send else [Plain(f'没有{name}成员直播')])
     await app.sendGroupMessage(group, mes)
 
-@bcc.receiver(
-    GroupMessage,
-    headless_decoraters = [judge.config_check(__name__)],
-    dispatchers = [Kanata([FullMatch('监控室 '), RequireParam('tag')])])
-async def dd_monitor(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
-    name = tag.asDisplay().strip()
-    if name not in dd_data:
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Kanata([FullMatch('监控室 '), RequireParam('tag')])]
+    ))
+async def dd_monitor(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
+    dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
+    if name := tag.asDisplay().strip() not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return
     status_api = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id="
@@ -100,11 +97,12 @@ async def dd_monitor(app: GraiaMiraiApplication, group: Group, member: Member, m
     await app.sendGroupMessage(group, MessageChain.create([
         Image.fromUnsafeBytes(out.getvalue())]))
 
-@bcc.receiver(
-    GroupMessage,
-    headless_decoraters = [judge.config_check(__name__)],
-    dispatchers = [Kanata([FullMatch('视频 '), RequireParam('tag')])])
-async def dd_video(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain, tag: MessageChain):
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Kanata([FullMatch('视频 '), RequireParam('tag')])]
+    ))
+async def dd_video(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
+    dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
     name = tag.asDisplay().strip()
     if name not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
@@ -135,7 +133,6 @@ async def get_videos(session, mid, last_time):
     while True:
         async with session.get(url.format(mid=mid, n=n)) as r:
             js = await r.json()
-        print(js)
         for video in js['data']['list']['vlist']:
             if video['created'] >= int(time.time())-last_time:
                 ret.append(video)

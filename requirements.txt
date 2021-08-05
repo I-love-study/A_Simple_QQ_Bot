@@ -2,7 +2,6 @@ matplotlib
 ujson
 numpy
 aiohttp
-tqdm
 lxml
 Pillow
 pycryptodome

@@ -27,8 +27,9 @@ class Group_save:
 				indent=2),
 			encoding='UTF-8')
 
-	def get_item(self, *args, create={}):
+	def get_item(self, *args, create=None):
 		cache = self.data
+		if create is None: create={}
 		for a in args[:-1]:
 			s = str(a)
 			cache.setdefault(s, {})

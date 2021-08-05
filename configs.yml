@@ -1,0 +1,8 @@
+account: 10000
+authKey: I_Love_Study
+miraiHost: http://localhost:8070
+admin_group: 10086
+ultra_administration:
+  - 1450069615
+load_modules_folder:
+  - entertain

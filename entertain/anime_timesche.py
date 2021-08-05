@@ -5,20 +5,25 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch, OptionalParam
 from graia.application.group import Group, Member
-from core import judge
-from core import get
+
+from graia.saya import Saya, Channel
+from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 import aiohttp
 from datetime import date, datetime
-from PIL import Image as IMG
-from PIL import ImageDraw, ImageFont
+from PIL import Image as IMG, ImageDraw, ImageFont
 from io import BytesIO
 
-__plugin_name__ = '番剧时刻表'
-__plugin_usage__ = 'anime/anime tomorrow/anime yesterday'
-bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
-							dispatchers = [Kanata([FullMatch('anime'), OptionalParam('para')])])
+channel = Channel.current()
+
+channel.name("AnimeTimeSchedule")
+channel.description("发送anime/anime tomorrow/anime yesterday获取昨/今/明的番剧时刻表")
+channel.author("I_love_study")
+
+@channel.use(ListenerSchema(
+	listening_events=[GroupMessage],
+	inline_dispatchers=[Kanata([FullMatch('anime'), OptionalParam('para')])]
+	))
 async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, para):
 	today = int(datetime.fromisoformat(date.today().isoformat()).timestamp())
 	date2ts = {'yesterday': today-86400, '':today, 'tomorrow': today+86400}

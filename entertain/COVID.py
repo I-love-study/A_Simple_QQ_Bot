@@ -5,8 +5,8 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch
 from graia.application.group import Group, Member
-from core import judge
-from core import get
+from graia.saya import Saya, Channel
+from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 import aiohttp
 import matplotlib.pyplot as plt
@@ -17,10 +17,18 @@ from io import BytesIO
 __plugin_name__ = '新冠病毒查看'
 __plugin_usage__ = '"COVID-19"'
 
-bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
-                            dispatchers = [Kanata([FullMatch('COVID-19')])])
-async def COVID(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
+channel = Channel.current()
+
+channel.name("COVID-19")
+channel.description("发送'COVID-19'获取新冠确诊病例排名前20的国家")
+channel.author("I_love_study")
+
+
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Kanata([FullMatch('COVID-19')])]
+    ))
+async def COVID(app: GraiaMiraiApplication, group: Group):
     back = await get_COVID_19()
     await app.sendGroupMessage(group, MessageChain.create([
         Plain("新型冠状病毒前10:\n"+"\n".join(back[0])),

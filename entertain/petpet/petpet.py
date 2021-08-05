@@ -5,12 +5,18 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch, OptionalParam
 from graia.application.group import Group, Member
-from core import judge
-from core import get
+from graia.saya import Channel
+from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 from PIL import Image as IMG
 from pathlib import Path
 from io import BytesIO
+
+channel = Channel.current()
+
+channel.name("petpet")
+channel.description("发送'摸头@某人'制作摸头GIF")
+channel.author("I_love_study")
 
 # 头像每一帧时的位置
 
@@ -61,9 +67,10 @@ def make_petpet(file, squish=0):
 		duration=0.05, transparency=0)
 	return ret.getvalue()
 
-bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
-							dispatchers = [Kanata([FullMatch('摸头'), OptionalParam('para')])])
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Kanata([FullMatch('摸头'), OptionalParam('para')])]
+    ))
 async def petpet(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, para):
 	user = para.get(At)[0].target if para and para.has(At) else member.id
 	profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"

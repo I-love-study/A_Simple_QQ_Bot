@@ -5,17 +5,21 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch
 from graia.application.group import Group, Member
+from graia.saya import Saya, Channel
+from graia.saya.builtins.broadcast.schema import ListenerSchema
 from graia.template import Template
-from core import judge
-from core import get
 import random
 
-__plugin_name__ = '学习文件下载'
-__plugin_usage__ = '"learn"'
+channel = Channel.current()
 
-bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
-                            dispatchers = [Kanata([FullMatch('learn')])])
+channel.name("Material")
+channel.description("发送'learn'获取学❤习❤资❤料")
+channel.author("I_love_study")
+#这些都是厚大法考的学习资料
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Kanata([FullMatch('learn')])]
+    ))
 async def learn(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
     learning_urls=[
         'http://oss.fk.houdask.com/sys/v/19/10/f64809ee7ccd44319ffddf74c8c8abf7.rar',

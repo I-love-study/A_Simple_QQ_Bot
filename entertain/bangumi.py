@@ -5,18 +5,24 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
 from graia.application.message.parser.signature import FullMatch, RequireParam
 from graia.application.group import Group, Member
-from core import judge
-from core import get
+
+from graia.saya import Saya, Channel
+from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 import aiohttp
 from urllib.parse import quote
 
-__plugin_name__ = '番剧详细信息'
-__plugin_usage__ = 'bangumi [你要搜索的参数]'
+channel = Channel.current()
 
-bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
-							dispatchers = [Kanata([FullMatch('bangumi'), RequireParam('tag')])])
+channel.name("BangumiData")
+channel.description("发送'bangumi [番剧]'获取番剧详细信息")
+channel.author("I_love_study")
+
+
+@channel.use(ListenerSchema(
+	listening_events=[GroupMessage],
+	inline_dispatchers=[Kanata([FullMatch('bangumi'), RequireParam('tag')])]
+	))
 async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
 	bangumi_headers = {
 	"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "\

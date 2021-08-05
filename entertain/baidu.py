@@ -3,28 +3,33 @@ from graia.application.event.messages import GroupMessage
 from graia.application.message.elements.internal import Plain, Image
 from graia.application.message.chain import MessageChain
 from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
+from graia.application.message.parser.signature import FullMatch, RequireParam, OptionalParam
 from graia.application.group import Group, Member
-from core import judge
-from core import get
+from graia.saya import Channel
+from graia.saya.builtins.broadcast.schema import ListenerSchema
 import aiohttp, urllib
+import ujson as json
 from lxml import etree
-
-__plugin_name__ = '百度system'
-__plugin_usage__ = '"百科 [参数]" 和 "热点"'
 
 headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
                        'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
 
-bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
-                            dispatchers = [Kanata([FullMatch('百科'), RequireParam(name = 'tag')])])
-async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
+channel = Channel.current()
+
+channel.name("BaiduSearch")
+channel.description("发送'百科 [词语]'获取拜读百科词条\n发送热点获取百度热点Top10")
+channel.author("I_love_study")
+
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Kanata([FullMatch('百科'), RequireParam(name = 'tag')])]
+    ))
+async def bdbk(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
     tags = tag.asDisplay().strip().split(' ',1)
     
     bdurl = f'https://baike.baidu.com/item/{urllib.parse.quote(tags[0])}?force=1'
     async with aiohttp.request("GET", bdurl, headers = headers, allow_redirects = True) as r:
-        if str(r.url) == 'https://baike.baidu.com/error.html':
+        if str(r.url).startswith('https://baike.baidu.com/error.html'):
             await app.sendGroupMessage(group, MessageChain.create([
                 Plain('sorry,百科并没有相关信息')]))
             return
@@ -34,10 +39,10 @@ async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
     if page.xpath('//div[@class="lemmaWgt-subLemmaListTitle"]//text()') != []:
         if len(tags) == 1:
             catalog = page.xpath('//div[@class="para" and @label-module="para"]/a/text()')
-            catalog = [f"{n+1}.{catalog[n].replace(f'{tags[0]}：','')}" for n in range(len(catalog))]
+            print(catalog)
             await app.sendGroupMessage(group, MessageChain.create([
-                Plain("请输入代号\ne.g:/百科 词语 1\n\n"),
-                Plain('\n'.join(catalog))
+                Plain(f"请输入代号\ne.g:百科 {tags[0]} 1\n\n"),
+                Plain('\n'.join(f"{n}.{w.replace(f'{tags[0]}：','')}" for n, w in enumerate(catalog, 1)))
                 ]))
             return
         use = int(tags[1]) - 1
@@ -61,14 +66,21 @@ async def bdbk(app: GraiaMiraiApplication, group: Group, message: MessageChain, 
 
     await app.sendGroupMessage(group, MessageChain.create(mes))
 
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)],
-                            dispatchers = [Kanata([FullMatch('热点')])])
-async def bdrd(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
-    url="http://top.baidu.com/buzz?b=1&fr=topindex"
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Kanata([FullMatch('热点'), OptionalParam('tag')])]
+    ))
+async def bdrd(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag):
+    url="https://top.baidu.com/board?tab=realtime"
     async with aiohttp.request("GET",url,headers = headers) as r:
-        reponse = await r.text(encoding = 'gb2312')
+        reponse = await r.text()
     html = etree.HTML(reponse)
-    get = html.xpath('//a[@class="list-title"]/text()')
-    get = [f"{n+1}.{get[n]}" for n in range(len(get))]
-    await app.sendGroupMessage(group, MessageChain.create([
-        Plain('\n'.join(get[0:10]))]))
+    get = json.loads(html.xpath("//div[@theme='realtime']/comment()")[0].text[7:])['data']['cards'][0]['content']
+    if tag and (t:=tag.asDisplay().strip()).isdigit():
+        g = int(t)-1
+        await app.sendGroupMessage(group, MessageChain.create([
+            Plain(f"{get[g]['word']}:\n{get[g]['desc']}")]))
+    else:
+        get_list = [f"{n}.{p['word']}" for n, p in enumerate(get, 1)]
+        await app.sendGroupMessage(group, MessageChain.create([
+            Plain('\n'.join(get_list[0:10]))]))

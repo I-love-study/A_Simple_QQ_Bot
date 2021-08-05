@@ -1,7 +1,7 @@
-import aiohttp, aiofiles
+import aiohttp
 import ujson as json
 from Crypto.Cipher import AES
-import tqdm, base64, binascii
+import base64, binascii
 import os
 
 headers = {

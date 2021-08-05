@@ -3,17 +3,19 @@ from graia.application.event.messages import GroupMessage
 from graia.application.message.elements.internal import Plain, Image
 from graia.application.message.chain import MessageChain
 from graia.application.group import Group, Member
-from core import judge
-from core import get
+from graia.saya import Channel
+from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 import re
 import aiohttp
 
-__plugin_name__ = 'B站视频信息查看'
-__plugin_usage__ = '发送任意av/BV号获取视频信息'
+channel = Channel.current()
 
-bcc = get.bcc()
-@bcc.receiver(GroupMessage, headless_decoraters = [judge.config_check(__name__)])
+channel.name("AVBV")
+channel.description("发送任意av/BV号获取视频信息")
+channel.author("I_love_study")
+
+@channel.use(ListenerSchema(listening_events=[GroupMessage]))
 async def video_info(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
     msg_str = message.asDisplay().strip()
     if msg_str.startswith(('av','AV','Av')):
