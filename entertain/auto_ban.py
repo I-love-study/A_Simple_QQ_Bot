@@ -16,7 +16,7 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([RegexMatch('.禁言我.')])]
+    inline_dispatchers=[Kanata([RegexMatch(".?禁言我.?")])]
     ))
 async def auto_ban(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
     try:

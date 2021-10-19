@@ -7,3 +7,4 @@ Pillow
 pycryptodome
 PyYAML
 graia-template
+graiax-silkcoder

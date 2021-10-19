@@ -180,10 +180,10 @@ def genImage(word_a="5000兆円", word_b="欲しい!", default_width=1500, heigh
             "red",
         ]
     ]
-    for pos, stroke, color in zip(upper_data[0], upper_data[1], upper_data[2]):
+    for pos, stroke, color in zip(*upper_data):
         mask_img_upper = IMG.new("L", (upper_width, _round(height/2)), 0)
         ImageDraw.Draw(mask_img_upper).text(
-            (pos[0], pos[1]), word_a,
+            (pos[0]+10, pos[1]), word_a,
             font=font_upper, fill=255,
             stroke_width=_round(stroke*height/500))
         img_upper.paste(upper_base[color], (0, 0), mask=mask_img_upper)
@@ -204,7 +204,7 @@ def genImage(word_a="5000兆円", word_b="欲しい!", default_width=1500, heigh
             "silver2"
         ]
     ]
-    for pos, stroke, color in zip(downer_data[0], downer_data[1], downer_data[2]):
+    for pos, stroke, color in zip(*downer_data):
         mask_img_downer = IMG.new("L", (downer_width+leftmargin, _round(height/2)), 0)
         ImageDraw.Draw(mask_img_downer).text(
             (pos[0]+leftmargin, pos[1]), word_b,

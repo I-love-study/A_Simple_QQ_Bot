@@ -2,16 +2,19 @@ from graia.application import GraiaMiraiApplication
 from graia.application.event.messages import GroupMessage
 from graia.application.message.elements.internal import Plain, Image
 from graia.application.message.chain import MessageChain
+from graia.application.message.parser.kanata import Kanata
+from graia.application.message.parser.signature import FullMatch, RequireParam
 from graia.application.group import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 import re
+
 import aiohttp
 
 channel = Channel.current()
 
-channel.name("AVBV")
+channel.name("AVBVAU")
 channel.description("发送任意av/BV号获取视频信息")
 channel.author("I_love_study")
 

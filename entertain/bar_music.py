@@ -11,8 +11,6 @@ from graia.template import Template
 from graiax import silkcoder
 from expand import Netease
 
-import platform
-
 channel = Channel.current()
 
 channel.name("BarMusic")
@@ -30,12 +28,9 @@ async def bar_music(app: GraiaMiraiApplication, group: Group, member: Member, ta
 	search_data = await Netease.search(tag.asDisplay().strip())
 	try:
 		download = await Netease.download_song(search_data[0]['id'])
-	except Exception:
+	except Exception as e:
 		await app.sendGroupMessage(group, Template('不知道为什么，但是我就是放不了').render())
 		return
-	if platform.system() == "Windows":
-		cache = Path(r"E:\python\QQ,Wechat\python-mirai\mcl\data\net.mamoe.mirai-api-http\voices\cache")
-	else: #服务器
-		cache = Path(r"\root\bot\mcl\data\net.mamoe.mirai-api-http\voices\cache")
-	cache.write_bytes(await silkcoder.encode(download, rate=80000, ss=0, t=60))
-	await app.sendGroupMessage(group, MessageChain.create([Voice(path="cache")]))
+	music_b = await silkcoder.encode(download, rate=80000, ss=0, t=60)
+	await app.sendGroupMessage(group, MessageChain.create([await app.uploadVoice(music_b)]))
+

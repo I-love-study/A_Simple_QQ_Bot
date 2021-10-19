@@ -48,7 +48,7 @@ async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain,
 				pic = pic.resize((240, 240), IMG.ANTIALIAS)
 			final_back.paste(pic, (30,30+300*n,270,270+300*n))
 			
-			ttf = ImageFont.truetype('C:/windows/fonts/SimHei.ttf', 60)
+			ttf = ImageFont.truetype('src/font/SourceHanSans-Medium.otf', 60)
 			ellipsis_size = ttf.getsize('...')[0]
 			if ttf.getsize(single['title'])[0] >= 900:
 				while ttf.getsize(single['title'])[0] > 900 - ellipsis_size:
