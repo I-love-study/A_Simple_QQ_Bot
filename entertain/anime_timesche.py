@@ -46,7 +46,9 @@ async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain,
 				pic = IMG.open(BytesIO(await f.read()))
 			if pic.size != (240, 240):
 				pic = pic.resize((240, 240), IMG.ANTIALIAS)
-			final_back.paste(pic, (30,30+300*n,270,270+300*n))
+			mask = IMG.new("L", (480,480), 0)
+			ImageDraw.Draw(mask).rounded_rectangle((0,0,480,480), 50, 255)
+			final_back.paste(pic, (30,30+300*n,270,270+300*n), mask=mask.resize((240, 240), IMG.ANTIALIAS))
 			
 			ttf = ImageFont.truetype('src/font/SourceHanSans-Medium.otf', 60)
 			ellipsis_size = ttf.getsize('...')[0]

@@ -35,7 +35,8 @@ async def get_avatar(uid, a=525, full_ver=False):
     
     if p:
         official_a = int(face_a*0.3)
-        official = Image.open(p).convert("RGBA").resize((official_a, official_a), Image.ANTIALIAS)
+        official = Image.open(p).convert("RGBA", palette=Image.ANTIALIAS)\
+                                .resize((official_a, official_a), Image.ANTIALIAS)
         off_point = int(a/2+face_a/2**0.5/2-official_a/2)
         img.paste(official, (off_point, off_point), mask=official)
     

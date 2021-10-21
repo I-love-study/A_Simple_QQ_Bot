@@ -8,6 +8,8 @@ from graia.application.group import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
+import yaml
+
 channel = Channel.current()
 
 data_path = Path(__file__).parent / 'dd_info.yml'
@@ -37,10 +39,3 @@ async def dd_group_del(app: GraiaMiraiApplication, group: Group, member: Member,
 		msg = 'DD数据中找不到这个组织'
 	data_path.write_text(yaml.safe_dump(dd_data), encoding = 'UTF-8')
 	await app.sendGroupMessage(group, MessageChain.create([Plain(msg)]))
-
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([FullMatch('组织删除 '), RequireParam('tag')])]
-    ))
-async def dd_member_add(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
-	
