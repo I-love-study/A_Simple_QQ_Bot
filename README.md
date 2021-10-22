@@ -41,12 +41,12 @@ load_modules_folder: #需要导入的文件夹
 ### [petpet表情包P图](entertain/petpet)
 功能介绍：返回一张petpet表情包并将被at者头像P到上面  
 调用指令："摸头" + (任意At) (无先后顺序，如没有at则为发送者自己)  
-~~抄袭~~借鉴： [SAGIRI-kawaii/sagiri-bot](https://github.com/SAGIRI-kawaii/sagiri-bot)
+~~抄袭~~借鉴： [SAGIRI-kawaii/sagiri-bot](https://github.com/SAGIRI-kawaii/sagiri-bot)  
 需要第三方模块：pillow
   
 ### [番剧时刻表](entertain/anime_timesche.py )
 功能介绍：发送B站昨天/今天/明天的番剧时刻表  
-调用办法："anime ('tomorrow'/'yesterday')"
+调用办法："anime ('tomorrow'/'yesterday')"  
 需要第三方模块：aiohttp, pillow
 
 ### [禁言我](entertain/auto_ban.py)
@@ -62,7 +62,7 @@ load_modules_folder: #需要导入的文件夹
 ### [番剧信息查看](entertain/bangumi.py)
 功能介绍：获取番剧的详细信息  
 调用办法："bangumi [番剧名称]"  
-~~抄袭~~借鉴： [SAGIRI-kawaii/sagiri-bot](https://github.com/SAGIRI-kawaii/sagiri-bot)
+~~抄袭~~借鉴： [SAGIRI-kawaii/sagiri-bot](https://github.com/SAGIRI-kawaii/sagiri-bot)  
 需要第三方模块：aiohttp
 
 ### [语音音乐条](entertain/bar_music.py)
