@@ -8,13 +8,24 @@ word_use  = set(TTFont('src/font/SourceHanSans-Heavy.otf')['cmap'].tables[0].ttF
 emoji_ttf = ImageFont.truetype('src/font/NotoColorEmoji.ttf', 109)
 emoji_use = set(TTFont('src/font/NotoColorEmoji.ttf')['cmap'].tables[0].ttFont.getBestCmap())
 
+def analyse_font(length, text, font):
+    cache = [""]
+    for w in text.split("\n"):
+        for f in w:
+            if font.getsize(cache[-1]+f)[0] > length:
+                cache.append("")
+            else:
+                cache[-1] += f
+        cache.append("")
+    return "\n".join(cache)
+
 class EmojiWriter:
 	"""此类用于绘制包含emoji的字符串"""
 
-	def __init__(self):
+	def __init__(self, font = None):
 		global emoji_ttf, emoji_use, word_ttf, word_use
-		self.word_ttf = word_ttf
-		self.word_use = word_use
+		self.word_ttf = word_ttf if font is None else ImageFont.truetype(font, 109)
+		self.word_use = word_use if font is None else set(TTFont(font)['cmap'].tables[0].ttFont.getBestCmap())
 		self.emoji_ttf = emoji_ttf
 		self.emoji_use = emoji_use
 
@@ -40,7 +51,9 @@ class EmojiWriter:
 				ty = self.emoji_ttf
 				gap = 0
 			else:
-				raise ValueError('Unknown_font')
+				#raise ValueError('Unknown_font')
+				ty = self.word_ttf
+				gap = int(109/8)
 			yield {'words': a,'type' : ty, 'gap': gap}
 
 	def _steady_width_split(self, text, size, width):
@@ -51,7 +64,7 @@ class EmojiWriter:
 		for line in analysis:
 			line_analysis = [[]]
 			for char in line:
-				char_width = char['type'].getsize(char['words'])[0]
+				char_width = char['type'].getlength(char['words'])
 				now_width += char_width
 				if now_width > wid:
 					line_analysis.append([])

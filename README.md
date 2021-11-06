@@ -114,10 +114,10 @@ load_modules_folder: #需要导入的文件夹
  - ~~抄其他机器人的功能~~
 
 ## 如何开启/关闭群组
-注：以下命令都需要在群里发送，并且用户为ultra_administration
+注：以下命令都需要在群里发送，并且用户in ultra_administration
 ```shell
-setting group --add 114514 #添加群号为114514的管理(既启动该群模组)
-setting group --delete 114514 #删除群号为114514的管理(且删除该群所有设置)
+setting group --add 114514 #添加群号为114514的管理(既启动该群模组)(无参数默认为发送该命令所在群)
+setting group --delete 114514 #删除群号为114514的管理(且删除该群所有设置)(无参数默认为发送该命令所在群)
 
 setting plugin -on entertain.baidu #启动百度模组
 setting plugin -off entertain.baidu #关闭百度模组
