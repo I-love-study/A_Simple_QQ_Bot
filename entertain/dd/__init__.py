@@ -1,10 +1,10 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import *
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -29,13 +29,17 @@ channel.description('''输入 '直播 [Hololive/Hanayori/Paryi_hop]'
 或者 监控室 [Hololive/Hanayori/Paryi_hop]''')
 channel.author("I_love_study")
 
+class WatchSp(Sparkle):
+    header = FullMatch("直播 ")
+    para = RegexMatch(".*")
+
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([FullMatch('直播 '), RequireParam('tag')])]
+    inline_dispatchers=[Twilight(WatchSp)]
     ))
-async def dd_watch(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
+async def dd_watch(app: Ariadne, group: Group, sparkle: Sparkle):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    name = tag.asDisplay().strip()
+    name = sparkle.para.result.asDisplay().strip()
     if name not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return
@@ -58,13 +62,17 @@ async def dd_watch(app: GraiaMiraiApplication, group: Group, member: Member, tag
     mes = MessageChain.create([Plain('正在直播的有:'),*send] if send else [Plain(f'没有{name}成员直播')])
     await app.sendGroupMessage(group, mes)
 
+class MonitorSp(Sparkle):
+    header = FullMatch("监控室 ")
+    para = RegexMatch(".*")
+
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([FullMatch('监控室 '), RequireParam('tag')])]
+    inline_dispatchers=[Twilight(MonitorSp)]
     ))
-async def dd_monitor(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
+async def dd_monitor(app: Ariadne, group: Group, sparkle: Sparkle):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    if name := tag.asDisplay().strip() not in dd_data:
+    if name := sparkle.para.result.asDisplay().strip() not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return
     status_api = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id="
@@ -95,15 +103,19 @@ async def dd_monitor(app: GraiaMiraiApplication, group: Group, member: Member, t
     out = BytesIO()
     final_back.save(out, format='JPEG', quality = 80)
     await app.sendGroupMessage(group, MessageChain.create([
-        Image.fromUnsafeBytes(out.getvalue())]))
+        Image(data_bytes=out.getvalue())]))
+
+class VideoSp(Sparkle):
+    header = FullMatch("视频 ")
+    para = RegexMatch(".*")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([FullMatch('视频 '), RequireParam('tag')])]
+    inline_dispatchers=[Twilight(VideoSp)]
     ))
-async def dd_video(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
+async def dd_video(app: Ariadne, group: Group, sparkle: Sparkle):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    name = tag.asDisplay().strip()
+    name = sparkle.para.result.asDisplay().strip()
     if name not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return

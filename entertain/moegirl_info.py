@@ -1,10 +1,10 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import *
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -17,14 +17,18 @@ channel.name("MoegirlInfo")
 channel.description("获取萌娘百科上人物介绍卡片")
 channel.author("I_love_study")
 
+class Sp(Sparkle):
+    header = FullMatch("萌娘百科")
+    para = RegexMatch(".*")
+
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([FullMatch("萌娘百科"), RequireParam("tag")])]
+    inline_dispatchers=[Twilight(Sp)]
 ))
-async def moegirl_search(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
-    url = "https://zh.moegirl.org.cn/zh-cn/"+ quote(tag.asDisplay().strip())
+async def moegirl_search(app: Ariadne, group: Group, sparkle: Sparkle):
+    url = "https://zh.moegirl.org.cn/zh-cn/"+ quote(sparkle.para.result.asDisplay().strip())
     async with async_playwright() as p:
-        browser = await p.chromium.launch(channel="msedge")
+        browser = await p.chromium.launch()
         context = await browser.new_context(device_scale_factor=2.0)
         page = await context.new_page()
         await app.sendGroupMessage(group, MessageChain.create([
@@ -59,5 +63,5 @@ async def moegirl_search(app: GraiaMiraiApplication, group: Group, member: Membe
         await browser.close()
     
     await app.sendGroupMessage(group, MessageChain.create([
-        Image.fromUnsafeBytes(pic)
+        Image(data_bytes=pic)
     ]))

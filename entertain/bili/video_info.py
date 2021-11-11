@@ -1,10 +1,8 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, Image
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -19,7 +17,7 @@ channel.description("发送任意av/BV号获取视频信息")
 channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
-async def video_info(app: GraiaMiraiApplication, group: Group, message: MessageChain, member:Member):
+async def video_info(app: Ariadne, group: Group, message: MessageChain, member:Member):
     msg_str = message.asDisplay().strip()
     if msg_str.startswith(('av','AV','Av')):
         try:
@@ -40,7 +38,7 @@ async def video_info(app: GraiaMiraiApplication, group: Group, message: MessageC
     during = '{}分{}秒'.format(data['duration'] // 60 ,data['duration'] % 60)
 
     await app.sendGroupMessage(group, MessageChain.create([
-        Image.fromNetworkAddress(get['data']['pic']),
+        Image(url=get['data']['pic']),
         Plain(f"\n标题:{data['title']}"),
         Plain(f"\nUp主:{data['owner']['name']}"),
         Plain(f"\n视频时长:{during}"),

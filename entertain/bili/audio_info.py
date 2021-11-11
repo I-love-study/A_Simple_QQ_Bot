@@ -1,10 +1,10 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, Image
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import RegexMatch, RequireParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -26,16 +26,20 @@ channel.name("biliAU号")
 channel.description("发送任意AU号获取信息")
 channel.author("I_love_study")
 
+class Sp(Sparkle):
+    header = RegexMatch("AU|au")
+    para = RegexMatch(".*")
+
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([RegexMatch('AU|au'), RequireParam('tag')])]
+    inline_dispatchers=[Twilight(Sp)]
 ))
-async def audio_info(app: GraiaMiraiApplication, group: Group, tag: MessageChain):
-    if not (t := tag.asDisplay()).isdigit():
+async def audio_info(app: Ariadne, group: Group, sparkle: Sparkle):
+    if not (t := sparkle.para.result.asDisplay()).isdigit():
         return
 
     await app.sendGroupMessage(group, MessageChain.create([
-        Image.fromUnsafeBytes(await audio_make(int(t)))
+        Image(data_bytes=await audio_make(int(t)))
     ]))
 
 async def audio_make(auid):

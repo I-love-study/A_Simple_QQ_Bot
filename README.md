@@ -1,7 +1,7 @@
 # A simple QQ Bot
 
 ## 这是什么
-一个使用[graia-application-mirai](https://github.com/GraiaProject/Application)/[graia-saya](https://github.com/GraiaProject/Saya)写的bot  
+一个使用[graia-ariadne](https://github.com/GraiaProject/Ariadne)/[graia-saya](https://github.com/GraiaProject/Saya)写的bot  
 如标题所言，相比于[SAGIRI-kawaii/sagiri-bot](https://github.com/SAGIRI-kawaii/sagiri-bot)这种大工程，本Bot仅仅是借助以上两个模块做了一点点的打包。假设未来有人想要通过这个文档学习saya也是一个不错的选择
 
 ## 前提提示
@@ -13,11 +13,11 @@
 ```yaml
 #config.yml
 account: 10000 #你的QQ账号
-authKey: I_Love_Study #mirai-api-http config中的authKey
+verify_key: I_Love_Study #mirai-api-http config中的verify_key
 miraiHost: http://localhost:8070 #mirai-api-http ws监视的端口
 admin_group: 10086 #管理员所在的群(现暂时没有相关模块需要所以可以不用管)
 ultra_administration: #最高权限人，可以控制模块的开启与关闭
-  - 1450069615
+  - 10001
 load_modules_folder: #需要导入的文件夹
   - entertain
 ```

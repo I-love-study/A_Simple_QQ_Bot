@@ -1,20 +1,21 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import *
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
-from PIL import Image as IMG, ImageDraw, ImageFont
-from io import BytesIO
-import numpy as np
-from decimal import Decimal, ROUND_HALF_UP
-from time import time
-from math import radians, tan, cos, sin
 import shlex
+from decimal import ROUND_HALF_UP, Decimal
+from io import BytesIO
+from math import radians, tan
+
+import numpy as np
+from PIL import Image as IMG
+from PIL import ImageDraw, ImageFont
 
 channel = Channel.current()
 
@@ -22,17 +23,21 @@ channel.name("5000M")
 channel.description("发送'5000m [词] [词]'制作'5000兆円欲しい'图片")
 channel.author("I_love_study")
 
+class Sp(Sparkle):
+    header = RegexMatch("5000[Mm]")
+    para = RegexMatch(".*")
+
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([FullMatch('5000m'), RequireParam('para')])]
-    ))
-async def give5000M(app: GraiaMiraiApplication, group: Group, para: MessageChain):
-    if len(tag:=shlex.split(para.asDisplay())) == 2:
+    inline_dispatchers=[Twilight(Sp)]
+))
+async def give5000M(app: Ariadne, group: Group, sparkle: Sparkle):
+    if len(tag:=shlex.split(sparkle.para.result.asDisplay())) == 2:
         pic = BytesIO()
         genImage(*tag).save(pic, format='PNG')
-        msg = [Image.fromUnsafeBytes(pic.getvalue())]
+        msg = Image(data_bytes=pic.getvalue())
     else:
-        msg = [Plain('消息有误，请重试')]
+        msg = Plain('消息有误，请重试')
     await app.sendGroupMessage(group, MessageChain.create(msg))
 
 _round = lambda f, r=ROUND_HALF_UP: int(Decimal(str(f)).quantize(Decimal("0"), rounding=r))

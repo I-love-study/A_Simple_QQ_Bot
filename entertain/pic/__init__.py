@@ -1,8 +1,8 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, At, Image
-from graia.application.message.chain import MessageChain
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -16,14 +16,14 @@ __plugin_usage__ = '@一个人说一句小老弟试试'
 channel = Channel.current()
 
 channel.name("LittleBro")
-channel.description("发送'小老弟 @xxx'制作小老弟表情包")
+channel.description("发送'5000m [词] [词]'制作'5000兆円欲しい'图片")
 channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
-async def xiaolaodi(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member):
+async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: Member):
     if '小老弟' in message.asDisplay() and message.has(At):
         xiaolaodi = IMG.open(Path(__file__).parent/'小老弟.png')
-        if (at_u := message.get(At)[0].target) == app.connect_info.account:
+        if (at_u := message.get(At)[0].target) == app.adapter.mirai_session.account:
             text = '我哪里像小老弟了,小老弟'
             to = member.id
             user = at_u
@@ -52,4 +52,4 @@ async def xiaolaodi(app: GraiaMiraiApplication, group: Group, message: MessageCh
         xiaolaodi.save(out, format='PNG')
         await app.sendGroupMessage(group, MessageChain.create([
             Plain(text = text),
-            Image.fromUnsafeBytes(out.getvalue())]))
+            Image(data_bytes=out.getvalue())]))

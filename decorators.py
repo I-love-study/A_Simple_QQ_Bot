@@ -2,9 +2,14 @@ from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 from graia.broadcast.exceptions import ExecutionStop, RequirementCrashed
-from graia.application.group import Group, Member, MemberPerm
+from graia.ariadne.model import Group, Member, MemberPerm
+
+import yaml
 
 from orm import *
+
+with open('configs.yml', encoding='UTF-8') as f:
+    ua = yaml.safe_load(f)['ultra_administration']
 
 class ConfigCheck(Decorator):
 	'''判断是否符合插件文件夹设置'''
@@ -68,13 +73,12 @@ class SettingCheck(Decorator):
 		am = self.active_members
 		nm = self.negative_members
 
-		if any((ag, ng, am, nm)):
-			if not any((
-				ag and group not in ag,
-				ng and group in ng,
-				am and member not in am,
-				nm and member in nm
-				)):raise ExecutionStop()
+		if any((
+			ag and group not in ag,
+			ng and group in ng,
+			am and member not in am,
+			nm and member in nm
+			)):raise ExecutionStop()
 
 def config_check(
 	active_groups: list = [],
@@ -100,7 +104,9 @@ def config_check(
 
 def admin_check():
 	async def admin_wrapper(member: Member):
-		'''判断是否为管理员/群主'''
-		if member.permission not in [MemberPerm.Owner, MemberPerm.Administrator]:
+		'''判断是否为管理员/群主/'''
+		if (member.permission not in [MemberPerm.Owner, MemberPerm.Administrator] and 
+			member.id not in ua
+		):
 			raise ExecutionStop()
 	return Depend(admin_wrapper)

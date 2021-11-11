@@ -1,10 +1,10 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, Image
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -23,18 +23,22 @@ channel.name("GhostTank")
 channel.description("发送'ghost_tank [图][图]'获取幻影坦克黑白图")
 channel.author("I_love_study")
 
+class Sp(Sparkle):
+    header = FullMatch("ghost_tank")
+    para = RegexMatch(".*")
+
 @channel.use(ListenerSchema(
 	listening_events=[GroupMessage],
-	inline_dispatchers=[Kanata([FullMatch('ghost_tank'), RequireParam('para')])]
+	inline_dispatchers=[Twilight(Sp)]
 	))
-async def ghost_tank(app: GraiaMiraiApplication, group: Group, member: Member, para: MessageChain):
+async def ghost_tank(app: Ariadne, group: Group, member: Member, para: MessageChain):
 	if len(p := para.get(Image)) == 2:
 		pics = asyncio.gather(*[i.http_to_bytes() for i in p])
 		b = BytesIO()
 		gray_car(*pics).save(b, format='PNG')
-		await app.sendGroupMessage(group, MessageChain.create([Image.fromUnsafeBytes(b.getvalue())]))
+		await app.sendGroupMessage(group, MessageChain.create(Image(data_bytes=b.getvalue())))
 	else:
-		await app.sendGroupMessage(group, MessageChain.create([Plain('你这图,数量不对啊kora')]))
+		await app.sendGroupMessage(group, MessageChain.create('你这图,数量不对啊kora'))
 
 # 感谢老司机
 # https://zhuanlan.zhihu.com/p/31164700
@@ -52,7 +56,7 @@ def gray_car(wimg: bytes, bimg: bytes,
     wimg = IMG.open(BytesIO(wimg))
     bimg = IMG.open(BytesIO(bimg))
     size = max(wimg.size[0], bimg.size[0]), max(wimg.size[1], bimg.size[1])
-    return Image.fromarray(build_car(
+    return IMG.fromarray(build_car(
         np.array(wimg.convert("L").resize(size)).astype("float64"),
         np.array(bimg.convert("L").resize(size)).astype("float64"),
         chess, wlight, blight

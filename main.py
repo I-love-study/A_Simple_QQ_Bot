@@ -6,34 +6,28 @@ from graia.saya import Saya
 from graia.broadcast import Broadcast
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 from graia.saya.builtins.broadcast import BroadcastBehaviour
-from graia.application import GraiaMiraiApplication, Session
-from graia.scheduler import GraiaScheduler
-from graia.scheduler.saya import GraiaSchedulerBehaviour
+from graia.ariadne.app import Ariadne
+from graia.ariadne.adapter import CombinedAdapter
+from graia.ariadne.model import MiraiSession
 
 import decorators
 from orm import *
 
 loop = asyncio.get_event_loop()
 bcc = Broadcast(loop=loop)
-sche = GraiaScheduler(loop = loop, broadcast = bcc)
 saya = Saya(bcc)
 saya.install_behaviours(BroadcastBehaviour(bcc))
-saya.install_behaviours(GraiaSchedulerBehaviour(sche))
 
 with open('configs.yml', encoding='UTF-8') as f:
     configs = yaml.safe_load(f)
 
-app = GraiaMiraiApplication(
+app = Ariadne.create(
     broadcast=bcc,
-    #debug=True,
-    #logger=logger,
-    connect_info=Session(
-        host=configs["miraiHost"],
-        authKey=configs["authKey"],
+    session=MiraiSession(
+        host=configs['miraiHost'],
         account=configs['account'],
-        websocket=True
-    )
-)
+        verify_key=configs["verify_key"],
+    ))
 
 
 with saya.module_context():
@@ -49,7 +43,7 @@ with saya.module_context():
             if any((
               module.name.startswith('_'),
               module.is_file() and module.suffix != '.py',
-              module.is_dir() and not (module / '__init__.py').exists())): 
+              module.is_dir() and not (module / '__init__.py').exists())):
                 continue
             config_check_deco = decorators.ConfigCheck(prefix, module.stem)
             if not session.query(session.query(Module).filter_by(folder=prefix, name=module.stem).exists()).scalar():
@@ -60,12 +54,12 @@ with saya.module_context():
                 session.commit()
             for cube in saya.require(f"{prefix}.{module.stem}").content:
                 if isinstance(cube.metaclass, ListenerSchema):
-                    cube_deco = cube.metaclass.headless_decorators
+                    cube_deco = cube.metaclass.decorators
                     if not (decorators.SettingCheck in [type(a) for a in cube_deco] and
                       next(a for a in cube_deco if isinstance(a, decorators.SettingCheck)).out_control):
                         cube_deco.append(config_check_deco)
                         (saya.broadcast.getListener(cube.content)
-                             .headless_decorators.append(config_check_deco))
+                             .decorators.append(config_check_deco))
 
 if __name__ == '__main__':
-    app.launch_blocking()
+    loop.run_until_complete(app.lifecycle())

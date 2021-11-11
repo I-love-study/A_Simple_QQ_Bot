@@ -1,10 +1,10 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import *
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, OptionalParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -20,19 +20,23 @@ channel.name("AnimeTimeSchedule")
 channel.description("发送anime/anime tomorrow/anime yesterday获取昨/今/明的番剧时刻表")
 channel.author("I_love_study")
 
+class Sp(Sparkle):
+	header = FullMatch("anime")
+	para = RegexMatch(".*", optional=True)
+
 @channel.use(ListenerSchema(
 	listening_events=[GroupMessage],
-	inline_dispatchers=[Kanata([FullMatch('anime'), OptionalParam('para')])]
+	inline_dispatchers=[Twilight(Sp)]
 	))
-async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, para):
+async def anime(app: Ariadne, group: Group, sparkle: Sparkle):
 	today = int(datetime.fromisoformat(date.today().isoformat()).timestamp())
 	date2ts = {'yesterday': today-86400, '':today, 'tomorrow': today+86400}
-	d = para.asDisplay().strip() if isinstance(para, MessageChain) else ''
+	d = sparkle.para.result.asDisplay().strip() if sparkle.para.matched else ''
 
 	if d in date2ts:
 		date_ts = date2ts[d]
 	else:
-		await app.sendGroupMessage(group, MessageChain.create([Plain('未知时间')]))
+		await app.sendGroupMessage(group, MessageChain.create('未知时间'))
 		return
 
 	async with aiohttp.ClientSession() as session:
@@ -64,4 +68,4 @@ async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain,
 		out = BytesIO()
 		final_back.save(out, format='JPEG')
 	await app.sendGroupMessage(group, MessageChain.create([
-		Image.fromUnsafeBytes(out.getvalue())]))
+		Image(data_bytes=out.getvalue())]))

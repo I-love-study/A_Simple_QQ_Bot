@@ -1,10 +1,10 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, Image
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -18,31 +18,35 @@ channel.name("BangumiData")
 channel.description("发送'bangumi [番剧]'获取番剧详细信息")
 channel.author("I_love_study")
 
+class Sp(Sparkle):
+	header = FullMatch("bangumi")
+	para = RegexMatch(".*")
 
 @channel.use(ListenerSchema(
 	listening_events=[GroupMessage],
-	inline_dispatchers=[Kanata([FullMatch('bangumi'), RequireParam('tag')])]
+	inline_dispatchers=[Twilight(Sp)]
 	))
-async def anime(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, tag: MessageChain):
+async def anime(app: Ariadne, group: Group, sparkle: Sparkle):
 	bangumi_headers = {
 	"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "\
 				  "AppleWebKit/537.36 (KHTML, like Gecko) "\
 				  "Chrome/84.0.4147.135 Safari/537.36"}
 	url = 'https://api.bgm.tv/search/subject/{}?type=2&responseGroup=Large&max_results=1'.format(
-		quote(tag.asDisplay().strip()))
+		quote(sparkle.para.result.asDisplay().strip()))
 	async with aiohttp.request("GET", url, headers = bangumi_headers) as r:
 		data = await r.json()
 
 	if "code" in data.keys() and data["code"] == 404:
-		await app.sendGroupMessage(group, MessageChain.create([
-			Plain('sorry,搜索不到相关信息')]))
+		await app.sendGroupMessage(group, MessageChain.create('sorry,搜索不到相关信息'))
 		return
 
 	detail_url = f'https://api.bgm.tv/subject/{data["list"][0]["id"]}?responseGroup=medium'
 	async with aiohttp.request("GET", detail_url) as r:
 		data = await r.json()
+	async with aiohttp.request("GET", data["images"]["large"]) as r:
+		img = await r.read()
 	await app.sendGroupMessage(group, MessageChain.create([
-		Image.fromNetworkAddress(data["images"]["large"]),
+		Image(data_bytes=img),
 		Plain(text=f"名字:{data['name_cn']}({data['name']})\n"),
 		Plain(text=f"简介:{data['summary']}\n"),
 		Plain(text=f"bangumi评分:{data['rating']['score']}(参与评分{data['rating']['total']}人)\n"),

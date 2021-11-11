@@ -1,20 +1,27 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import *
-from graia.application.message.chain import MessageChain
-from graia.application.group import Group, Member
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, OptionalParam
+from graia.ariadne.app import Ariadne
+from graia.ariadne.message.parser.pattern import ElementMatch, FullMatch
+from graia.ariadne.model import Group, Member, MemberPerm
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.twilight import Twilight, Sparkle
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
-from PIL import Image as IMG
-from PIL import ImageDraw, ImageFont
-import regex
-from graiax.msgparse import MessageChainParser, MsgString, ParserExit
+import asyncio
 from io import StringIO, BytesIO
 
+from PIL import Image as IMG
+from PIL import ImageDraw, ImageFont
+from graiax.msgparse import MessageChainParser, MsgString, ParserExit
+from prettytable import PrettyTable
+from prettytable import FRAME, HEADER, ALL
+import regex
+
 from orm import *
+from decorators import admin_check
+from expand.text import EmojiWriter
 
 class GetSetting:
 
@@ -32,14 +39,83 @@ class GetSetting:
 
 saya = Saya.current()
 channel = Channel.current()
+
+class SettingWatch(Sparkle):
+	header = FullMatch("设置查看")
+	group = RegexMatch(".*", optional=True)
+
 @channel.use(ListenerSchema(
-    listening_events=[GroupMessage], priority=8,
-    inline_dispatchers=[Kanata([FullMatch('setting'), OptionalParam('tag')])]
-    ))
-async def setting(app: GraiaMiraiApplication, group: Group, member:Member, tag):
-	ss = session.query(QQGroup).filter(QQGroup.id == group.id).first()
-	if ss == 'ultra_administration' and member.id not in saya.access('all_setting')['ultra_administration']:
+	listening_events=[GroupMessage], decorators=[admin_check()],
+	inline_dispatchers=[Twilight(SettingWatch)]	
+))
+async def setting_watch(app: Ariadne, group: Group, member: Member, sparkle: Sparkle):
+	x = PrettyTable()
+	x.hrules = FRAME
+	x.vrules = FRAME
+	x.field_names = ["Plugin name", "switch"]
+	x.align["Plugin name"] = "l"
+	x.sortby = "Plugin name"
+	try:
+		g = group.id if sparkle.group is None else int(sparkle.group.asDisplay().strip())
+	except ValueError:
+		await app.sendGroupMessage(group, MessageChain.create(
+			Plain("参数错误，请检查你所填写的参数")
+		))
 		return
+
+	x.add_rows(
+		[
+			[
+				f"{b.module.folder}.{b.module.name}",
+				f"{b.switch}{'✅' if b.switch else '❌'}"
+			]
+		for b in session.query(ModuleSetting).filter_by(group_id=g).all()
+		]
+	)
+
+	def makepic():
+		pic = EmojiWriter(font="src/font/SourceHanSansHW-Regular.otf").text2pic(str(x),"white", size=109)
+		i = IMG.new("RGB", pic.size)
+		i.paste(pic,(0,0),pic)
+		b = BytesIO()
+		i.save(b, format="JPEG")
+		return b.getvalue()
+		
+	await app.sendGroupMessage(group, MessageChain.create([
+		Image.fromUnsafeBytes(await asyncio.to_thread(makepic))
+	]))
+
+
+class Setting(Sparkle):
+	header = FullMatch("setting")
+	command = RegexMatch(".*", optional=True)
+
+@channel.use(ListenerSchema(
+    listening_events=[GroupMessage], priority=4,
+    inline_dispatchers=[Twilight(Setting)]
+    ))
+async def setting(app: Ariadne, group: Group, member:Member, sparkle: Sparkle):
+	ss = session.query(QQGroup).filter(QQGroup.id == group.id).first()
+	access = False
+	if ss is None and member.id in saya.access('all_setting')['ultra_administration']:
+		access = True
+	elif (
+		ss.Permission == 'ultra_administration' and 
+		member.id in saya.access('all_setting')['ultra_administration']
+	):
+		access = True
+	elif (
+		ss.Permission == "owner" and
+		member.permission == MemberPerm.Owner
+	):
+		access = True
+	elif (
+		ss.Permission == "administrator" and
+		member.permission == MemberPerm.Administrator
+	):
+		access = True
+	
+	if not access: return
 
 	msg = []
 	std_output = StringIO()
@@ -68,7 +144,7 @@ async def setting(app: GraiaMiraiApplication, group: Group, member:Member, tag):
 	plugin_setting.set_defaults(command_type='plugin')
 
 	try:
-		args = parser.parse_args('' if tag is None else tag.asDisplay())
+		args = parser.parse_args(sparkle.command.result.asDisplay() if sparkle.command else "")
 	except ParserExit as e:
 		ttf = ImageFont.truetype('src/font/SourceHanSans-Medium.otf', 60)
 		word = std_output.getvalue()
@@ -146,6 +222,9 @@ async def setting(app: GraiaMiraiApplication, group: Group, member:Member, tag):
 			msg.append("Error：管理权限还没写完，下次一定")
 	elif args.command_type == 'plugin':
 		groups = args.group if args.group is not None else [group.id]
+		if groups == [0]:
+			groups = [s[0] for s in session.query(QQGroup).with_entities(QQGroup.id).all()]
+			msg.append("警告，此命令范围为全群")
 		q = session.query(ModuleSetting).filter(
 			ModuleSetting.module_id == Module.id).filter(
 			Module.folder == args.module,

@@ -1,14 +1,15 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import *
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, OptionalParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 from PIL import Image as IMG
+import aiohttp
 from pathlib import Path
 from io import BytesIO
 
@@ -67,14 +68,18 @@ def make_petpet(file, squish=0):
 		duration=0.05, transparency=0)
 	return ret.getvalue()
 
+class Sp(Sparkle):
+	header = FullMatch("摸头")
+	para = RegexMatch(".*")
+
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([FullMatch('摸头'), OptionalParam('para')])]
+    inline_dispatchers=[Twilight(Sp)]
     ))
-async def petpet(app: GraiaMiraiApplication, group: Group, message: MessageChain, member: Member, para):
-	user = para.get(At)[0].target if para and para.has(At) else member.id
+async def petpet(app: Ariadne, group: Group, member: Member, sparkle: Sparkle):
+	user = sparkle.para.result.getFirst(At).target if sparkle.para.matched and sparkle.para.result.has(At) else member.id
 	profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"
 	async with aiohttp.request("GET", profile_url) as r:
 		profile = BytesIO(await r.read())
 	gif = make_petpet(profile)
-	await app.sendGroupMessage(group, MessageChain.create([Image.fromUnsafeBytes(gif)]))
+	await app.sendGroupMessage(group, MessageChain.create([Image(data_bytes=gif)]))

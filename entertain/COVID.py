@@ -1,10 +1,10 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import Plain, Image
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -23,16 +23,18 @@ channel.name("COVID-19")
 channel.description("发送'COVID-19'获取新冠确诊病例排名前20的国家")
 channel.author("I_love_study")
 
+class Sp(Sparkle):
+    header = FullMatch("COVID-19")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Kanata([FullMatch('COVID-19')])]
+    inline_dispatchers=[Twilight(Sp)]
     ))
-async def COVID(app: GraiaMiraiApplication, group: Group):
+async def COVID(app: Ariadne, group: Group):
     back = await get_COVID_19()
     await app.sendGroupMessage(group, MessageChain.create([
         Plain("新型冠状病毒前10:\n"+"\n".join(back[0])),
-        Image.fromUnsafeBytes(back[1])
+        Image(data_bytes=back[1])
         ]))
 
 async def get_COVID_19(Pic=True):

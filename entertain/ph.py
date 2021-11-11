@@ -1,10 +1,10 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.event.messages import GroupMessage
-from graia.application.message.elements.internal import *
-from graia.application.message.chain import MessageChain
-from graia.application.message.parser.kanata import Kanata
-from graia.application.message.parser.signature import FullMatch, RequireParam
-from graia.application.group import Group, Member
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -20,14 +20,18 @@ channel.name("PornHubStyleWord")
 channel.description("发送'ph [字] [字]'获取熟悉的ph图标")
 channel.author("I_love_study")
 
+class Sp(Sparkle):
+	header = FullMatch("ph")
+	para = RegexMatch(".*")
+
 @channel.use(ListenerSchema(
 	listening_events=[GroupMessage],
-	inline_dispatchers=[Kanata([FullMatch('ph'), RequireParam('para')])]
+	inline_dispatchers=[Twilight(Sp)]
 	))
-async def pornhub(app: GraiaMiraiApplication, group: Group, member: Member, para: MessageChain, message: MessageChain):
-	if len(tag:=shlex.split(para.asDisplay())) == 2:
+async def pornhub(app: Ariadne, group: Group, sparkle: Sparkle):
+	if len(tag:=shlex.split(sparkle.para.result.asDisplay())) == 2:
 		pic = make_porn_logo(*tag, 109)#必须是109(emoji)
-		msg = [Image.fromUnsafeBytes(pic)]
+		msg = [Image(data_bytes=pic)]
 	else:
 		msg = [Plain('消息有误，请重试')]
 	await app.sendGroupMessage(group, MessageChain.create(msg))
