@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import RegexMatch, WildcardMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
@@ -12,7 +12,6 @@ from io import BytesIO
 from pathlib import Path
 
 from bilibili_api.audio import Audio
-from bilibili_api.user import User
 from PIL import Image as IMG, ImageDraw, ImageFont
 import qrcode
 import aiohttp
@@ -26,13 +25,11 @@ channel.name("biliAU号")
 channel.description("发送任意AU号获取信息")
 channel.author("I_love_study")
 
-class Sp(Sparkle):
-    header = RegexMatch("AU|au")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]
+    inline_dispatchers=[Twilight(Sparkle(
+        [RegexMatch("AU|au")], {"para": WildcardMatch()}
+    ))]
 ))
 async def audio_info(app: Ariadne, group: Group, sparkle: Sparkle):
     if not (t := sparkle.para.result.asDisplay()).isdigit():

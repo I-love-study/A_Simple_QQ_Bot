@@ -23,13 +23,13 @@ channel.author("I_love_study")
 async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: Member):
     if '小老弟' in message.asDisplay() and message.has(At):
         xiaolaodi = IMG.open(Path(__file__).parent/'小老弟.png')
-        if (at_u := message.get(At)[0].target) == app.adapter.mirai_session.account:
+        if At(app.adapter.mirai_session.account) in message:
             text = '我哪里像小老弟了,小老弟'
             to = member.id
-            user = at_u
+            user = app.adapter.mirai_session.account
         else:
             text = ''
-            to = at_u
+            to = message.get(At)[0].target
             user = member.id
 
         user_pic = f'http://q1.qlogo.cn/g?b=qq&nk={user}&s=640'

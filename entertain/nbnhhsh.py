@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
@@ -16,19 +16,17 @@ channel.name("nbnhhsh")
 channel.description("发送'nbnhhsh [缩写]'返回缩写全程")
 channel.author("I_love_study")
 
-class Sp(Sparkle):
-    header = FullMatch("nbnhhsh")
-    para = RegexMatch(".*", optional=True)
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("nbnhhsh")], {"para": WildcardMatch(optional=True)}
+    ))]
 ))
-async def nbnhhsh(app: Ariadne, group: Group, sparkle: Sparkle):
-    if not sparkle.para.matched:
+async def nbnhhsh(app: Ariadne, group: Group, para: WildcardMatch):
+    if not para.matched:
         msg = '能不能好好说话'
     else:
-        js = {'text': sparkle.para.result.asDisplay().strip()}
+        js = {'text': para.result.asDisplay().strip()}
         url = "https://lab.magiconch.com/api/nbnhhsh/guess"
         async with aiohttp.request("POST", url, json=js) as r:
             ret = (await r.json())[0]

@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
@@ -17,16 +17,14 @@ channel.name("MoegirlInfo")
 channel.description("获取萌娘百科上人物介绍卡片")
 channel.author("I_love_study")
 
-class Sp(Sparkle):
-    header = FullMatch("萌娘百科")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("萌娘百科")], {"para": WildcardMatch()}
+    ))]
 ))
-async def moegirl_search(app: Ariadne, group: Group, sparkle: Sparkle):
-    url = "https://zh.moegirl.org.cn/zh-cn/"+ quote(sparkle.para.result.asDisplay().strip())
+async def moegirl_search(app: Ariadne, group: Group, para: WildcardMatch):
+    url = "https://zh.moegirl.org.cn/zh-cn/"+ quote(para.result.asDisplay().strip())
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         context = await browser.new_context(device_scale_factor=2.0)

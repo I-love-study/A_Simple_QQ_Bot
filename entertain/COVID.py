@@ -23,13 +23,10 @@ channel.name("COVID-19")
 channel.description("发送'COVID-19'获取新冠确诊病例排名前20的国家")
 channel.author("I_love_study")
 
-class Sp(Sparkle):
-    header = FullMatch("COVID-19")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]
-    ))
+    inline_dispatchers=[Twilight(Sparkle([FullMatch("COVID-19")]))]
+))
 async def COVID(app: Ariadne, group: Group):
     back = await get_COVID_19()
     await app.sendGroupMessage(group, MessageChain.create([
@@ -38,19 +35,25 @@ async def COVID(app: Ariadne, group: Group):
         ]))
 
 async def get_COVID_19(Pic=True):
-    country_get=[]
     headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
                        'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
-    async with aiohttp.request("GET","https://c.m.163.com/ug/api/wuhan/app/data/list-total",headers=headers) as r:
+    async with aiohttp.request("GET", "https://c.m.163.com/ug/api/wuhan/app/data/list-total", headers=headers) as r:
         reponse = await r.json()
-    for country in reponse['data']['areaTree']:
-        country_get.append([country['name'],country['total']['confirm'],
-                            country['today']['confirm'],country['lastUpdateTime']])
-    country_get.sort(key=lambda s:s[1],reverse = True)
-    get=[f"{a[0]}:{a[1]}例 新增{a[2]}\n{a[3]}" for a in country_get[:10]]
-    x=[a[0] for a in country_get[:20]]
-    y1=[a[1]-a[2] if a[2] != None else a[1] for a in country_get[:20]]
-    y2=[a[2] if a[2] != None else 0 for a in country_get[:20]]
+    country_total = reponse['data']['areaTree']
+    country_total.sort(key=lambda s: s['total']['confirm'], reverse=True)
+    get = [(f"{a['name']}:{a['total']['confirm']}例 "
+            f"新增{a['today']['confirm']}\n{a['lastUpdateTime']}")
+           for a in country_total[:10]]
+    x = [a['name'] for a in country_total[:20]]
+    y1 = [
+        a['total']['confirm'] - a['today']['confirm']
+        if a['today']['confirm'] != None else a['total']['confirm']
+        for a in country_total[:20]
+    ]
+    y2 = [
+        a['today']['confirm'] if a['today']['confirm'] != None else 0
+        for a in country_total[:20]
+    ]
     if Pic:
         # 创建一个点数为 8 x 6 的窗口, 并设置分辨率为 80像素/每英寸
         plt.figure(figsize=(30, 20), dpi=100)
@@ -77,7 +80,7 @@ async def get_COVID_19(Pic=True):
         plt.xticks(index, x)
         # 添加图例
         plt.legend(loc="upper right")
-        
+
 
         for a, b, c in zip(index, y1, y2):
             plt.text(a, b + c + 0.05 , str(b + c),

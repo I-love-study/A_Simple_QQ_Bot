@@ -2,10 +2,10 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
-from graia.saya import Channel
+from graia.saya import Channel, Saya
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 import time
@@ -29,14 +29,12 @@ channel.description('''输入 '直播 [Hololive/Hanayori/Paryi_hop]'
 或者 监控室 [Hololive/Hanayori/Paryi_hop]''')
 channel.author("I_love_study")
 
-class WatchSp(Sparkle):
-    header = FullMatch("直播 ")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(WatchSp)]
-    ))
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("直播")], {"para": WildcardMatch()}
+    ))]
+))
 async def dd_watch(app: Ariadne, group: Group, sparkle: Sparkle):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
     name = sparkle.para.result.asDisplay().strip()
@@ -62,14 +60,12 @@ async def dd_watch(app: Ariadne, group: Group, sparkle: Sparkle):
     mes = MessageChain.create([Plain('正在直播的有:'),*send] if send else [Plain(f'没有{name}成员直播')])
     await app.sendGroupMessage(group, mes)
 
-class MonitorSp(Sparkle):
-    header = FullMatch("监控室 ")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(MonitorSp)]
-    ))
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("监控室")], {"para": WildcardMatch()}
+    ))]
+))
 async def dd_monitor(app: Ariadne, group: Group, sparkle: Sparkle):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
     if name := sparkle.para.result.asDisplay().strip() not in dd_data:
@@ -105,14 +101,12 @@ async def dd_monitor(app: Ariadne, group: Group, sparkle: Sparkle):
     await app.sendGroupMessage(group, MessageChain.create([
         Image(data_bytes=out.getvalue())]))
 
-class VideoSp(Sparkle):
-    header = FullMatch("视频 ")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(VideoSp)]
-    ))
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("视频")], {"para": WildcardMatch()}
+    ))]
+))
 async def dd_video(app: Ariadne, group: Group, sparkle: Sparkle):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
     name = sparkle.para.result.asDisplay().strip()

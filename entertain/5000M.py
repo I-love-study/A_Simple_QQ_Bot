@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import RegexMatch
+from graia.ariadne.message.parser.pattern import RegexMatch, WildcardMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
@@ -23,13 +23,11 @@ channel.name("5000M")
 channel.description("发送'5000m [词] [词]'制作'5000兆円欲しい'图片")
 channel.author("I_love_study")
 
-class Sp(Sparkle):
-    header = RegexMatch("5000[Mm]")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]
+    inline_dispatchers=[Twilight(Sparkle(
+        [RegexMatch("5000[Mm]")], {"para": WildcardMatch()}
+    ))]
 ))
 async def give5000M(app: Ariadne, group: Group, sparkle: Sparkle):
     if len(tag:=shlex.split(sparkle.para.result.asDisplay())) == 2:

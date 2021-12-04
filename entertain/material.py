@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import FullMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
@@ -16,12 +16,9 @@ channel.description("发送'learn'获取学❤习❤资❤料")
 channel.author("I_love_study")
 #这些都是厚大法考的学习资料
 
-class Sp(Sparkle):
-    header = FullMatch("learn")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]
+    inline_dispatchers=[Twilight(Sparkle([FullMatch("learn")]))]
     ))
 async def learn(app: Ariadne, group: Group, message: MessageChain, member:Member):
     learning_urls=[

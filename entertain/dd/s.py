@@ -26,23 +26,23 @@ final_data = {}
 
 room_data = []
 for a in hololive_ids:
-	room_id = requests.get(live_api + str(a)).json()['data']['url'].split(r'/')[-1]
-	room_data.append(int(room_id))
+    room_id = requests.get(live_api + str(a)).json()['data']['url'].split(r'/')[-1]
+    room_data.append(int(room_id))
 final_data['Hololive'] = {'mid':hololive_ids, 'room_id':room_data}
 
 room_data = []
 for a in Hanayori_ids:
-	room_id = requests.get(live_api + str(a)).json()['data']['url'].split(r'/')[-1]
-	room_data.append(int(room_id))
+    room_id = requests.get(live_api + str(a)).json()['data']['url'].split(r'/')[-1]
+    room_data.append(int(room_id))
 final_data['Hanayori'] = {'mid':Hanayori_ids, 'room_id':room_data}
 
 room_data = []
 for a in paryi_hop_ids:
-	room_id = requests.get(live_api + str(a)).json()['data']['url'].split(r'/')[-1]
-	if room_id:
-		room_data.append(int(room_id))
-	else:
-		paryi_hop_ids.remove(a)
+    room_id = requests.get(live_api + str(a)).json()['data']['url'].split(r'/')[-1]
+    if room_id:
+        room_data.append(int(room_id))
+    else:
+        paryi_hop_ids.remove(a)
 final_data['Paryi_hop'] = {'mid':paryi_hop_ids, 'room_id':room_data}
 
 

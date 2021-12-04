@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
@@ -46,40 +46,38 @@ squish_factor = [
 squish_translation_factor = [0, 20, 34, 21, 0]
 
 def make_petpet(file, squish=0):
-	profile_pic = IMG.open(file)
-	hands = IMG.open(Path(__file__).parent/'sprite.png')
-	gifs = []
-	for i,spec in enumerate(frame_spec):
-		# 将位置添加偏移量
-		for j, s in enumerate(spec):
-			spec[j] = int(s + squish_factor[i][j] * squish)
-		hand = hands.crop((112*i,0,112*(i+1),112))
-		reprofile = profile_pic.resize(
-			(int((spec[2] - spec[0]) * 1.2), int((spec[3] - spec[1]) * 1.2)),
-			IMG.ANTIALIAS)
-		gif_frame = IMG.new('RGB', (112, 112), (255, 255, 255))
-		gif_frame.paste(reprofile, (spec[0], spec[1]))
-		gif_frame.paste(hand, (0, int(squish * squish_translation_factor[i])), hand)
-		gifs.append(gif_frame)
-	ret = BytesIO()
-	gifs[0].save(
-		ret,format='gif',
-		save_all=True, append_images=gifs,
-		duration=0.05, transparency=0)
-	return ret.getvalue()
-
-class Sp(Sparkle):
-	header = FullMatch("摸头")
-	para = RegexMatch(".*")
+    profile_pic = IMG.open(file)
+    hands = IMG.open(Path(__file__).parent/'sprite.png')
+    gifs = []
+    for i,spec in enumerate(frame_spec):
+        # 将位置添加偏移量
+        for j, s in enumerate(spec):
+            spec[j] = int(s + squish_factor[i][j] * squish)
+        hand = hands.crop((112*i,0,112*(i+1),112))
+        reprofile = profile_pic.resize(
+            (int((spec[2] - spec[0]) * 1.2), int((spec[3] - spec[1]) * 1.2)),
+            IMG.ANTIALIAS)
+        gif_frame = IMG.new('RGB', (112, 112), (255, 255, 255))
+        gif_frame.paste(reprofile, (spec[0], spec[1]))
+        gif_frame.paste(hand, (0, int(squish * squish_translation_factor[i])), hand)
+        gifs.append(gif_frame)
+    ret = BytesIO()
+    gifs[0].save(
+        ret,format='gif',
+        save_all=True, append_images=gifs,
+        duration=0.05, transparency=0)
+    return ret.getvalue()
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]
-    ))
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("摸头")], {"para": WildcardMatch()}        
+    ))]
+))
 async def petpet(app: Ariadne, group: Group, member: Member, sparkle: Sparkle):
-	user = sparkle.para.result.getFirst(At).target if sparkle.para.matched and sparkle.para.result.has(At) else member.id
-	profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"
-	async with aiohttp.request("GET", profile_url) as r:
-		profile = BytesIO(await r.read())
-	gif = make_petpet(profile)
-	await app.sendGroupMessage(group, MessageChain.create([Image(data_bytes=gif)]))
+    user = sparkle.para.result.getFirst(At).target if sparkle.para.matched and sparkle.para.result.has(At) else member.id
+    profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"
+    async with aiohttp.request("GET", profile_url) as r:
+        profile = BytesIO(await r.read())
+    gif = make_petpet(profile)
+    await app.sendGroupMessage(group, MessageChain.create([Image(data_bytes=gif)]))

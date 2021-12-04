@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
@@ -20,17 +20,15 @@ channel.name("BaiduSearch")
 channel.description("发送'百科 [词语]'获取拜读百科词条\n发送热点获取百度热点Top10")
 channel.author("I_love_study")
 
-class Bk(Sparkle):
-    header = FullMatch("百科")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Bk)]
-    ))
-async def bdbk(app: Ariadne, group: Group, sparkle: Sparkle):
-    tags = sparkle.para.result.asDisplay().strip().split(' ',1)
-    
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("百科")], {"para": WildcardMatch()}
+    ))]
+))
+async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
+    tags = para.result.asDisplay().strip().split(' ',1)
+
     bdurl = f'https://baike.baidu.com/item/{urllib.parse.quote(tags[0])}?force=1'
     async with aiohttp.request("GET", bdurl, headers = headers, allow_redirects = True) as r:
         if str(r.url).startswith('https://baike.baidu.com/error.html'):
@@ -64,31 +62,31 @@ async def bdbk(app: Ariadne, group: Group, sparkle: Sparkle):
 
     mes = [Plain(f'{mem}\n' if mem else '没有简介desu\n'),
            Plain(bdurl.replace("?force=1",""))]
-    
+
     if (img_url := page.xpath('//div[@class="summary-pic"]/a/img/@src')):
         mes.append(Image(url=img_url[0]))
 
     await app.sendGroupMessage(group, MessageChain.create(mes))
 
-class Rd(Sparkle):
-    header = FullMatch("热点")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Rd)]
-    ))
-async def bdrd(app: Ariadne, group: Group, sparkle: Sparkle):
-    url="https://top.baidu.com/board?tab=realtime"
-    async with aiohttp.request("GET",url,headers = headers) as r:
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("热点")], {"para": WildcardMatch()}
+    ))]
+))
+async def bdrd(app: Ariadne, group: Group, para: WildcardMatch):
+    url = "https://top.baidu.com/board?tab=realtime"
+    async with aiohttp.request("GET", url, headers=headers) as r:
         reponse = await r.text()
     html = etree.HTML(reponse)
-    get = json.loads(html.xpath("//div[@theme='realtime']/comment()")[0].text[7:])['data']['cards'][0]['content']
-    if sparkle.para.matched and (t:=sparkle.para.result.asDisplay().strip()).isdigit():
-        g = int(t)-1
-        await app.sendGroupMessage(group, MessageChain.create([
-            Plain(f"{get[g]['word']}:\n{get[g]['desc']}")]))
+    get = json.loads(
+        html.xpath("//div[@theme='realtime']/comment()")
+        [0].text[7:])['data']['cards'][0]['content']
+    if para.matched and (t := para.result.asDisplay().strip()).isdigit():
+        get = get[int(t) - 1]
+        await app.sendGroupMessage(
+            group, MessageChain.create(f"{get['word']}:\n{get['desc']}"))
     else:
         get_list = [f"{n}.{p['word']}" for n, p in enumerate(get, 1)]
-        await app.sendGroupMessage(group, MessageChain.create([
-            Plain('\n'.join(get_list[0:10]))]))
+        await app.sendGroupMessage(
+            group, MessageChain.create('\n'.join(get_list[0:10])))

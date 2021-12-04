@@ -14,16 +14,13 @@ channel.name("BanMe")
 channel.description("发送'禁言我'禁言(前提是有权限)")
 channel.author("I_love_study")
 
-class Sp(Sparkle):
-    para = RegexMatch(".?禁言我.?")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]
-    ))
+    inline_dispatchers=[Twilight(Sparkle([RegexMatch(".?禁言我.?")]))]
+))
 async def auto_ban(app: Ariadne, group: Group, member: Member):
     try:
-        await app.mute(group, member, 600)
+        await app.muteMember(group, member, 600)
         await app.sendGroupMessage(group, MessageChain.create('那我就来实现你的愿望吧！'))
     except PermissionError:
         await app.sendGroupMessage(group, MessageChain.create('对不起，我没有办法实现你的愿望555~'))

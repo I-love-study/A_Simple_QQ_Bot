@@ -17,7 +17,7 @@ channel.description("发送任意av/BV号获取视频信息")
 channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
-async def video_info(app: Ariadne, group: Group, message: MessageChain, member:Member):
+async def video_info(app: Ariadne, group: Group, message: MessageChain):
     msg_str = message.asDisplay().strip()
     if msg_str.startswith(('av','AV','Av')):
         try:

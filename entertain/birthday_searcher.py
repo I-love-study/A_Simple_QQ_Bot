@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import FullMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel, channel
@@ -22,12 +22,9 @@ channel.name("Birthday_searcher")
 channel.description("coming soon")
 channel.author("I_love_study")
 
-class Sp(Sparkle):
-    header = FullMatch("今天谁生日")
-
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sp)]    
+    inline_dispatchers=[Twilight(Sparkle([FullMatch("今天谁生日")]))]    
 ))
 async def today_birthday(app: Ariadne, group: Group):
     t = date.today()

@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
 from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 
@@ -23,27 +23,25 @@ channel.name("GhostTank")
 channel.description("发送'ghost_tank [图][图]'获取幻影坦克黑白图")
 channel.author("I_love_study")
 
-class Sp(Sparkle):
-    header = FullMatch("ghost_tank")
-    para = RegexMatch(".*")
-
 @channel.use(ListenerSchema(
-	listening_events=[GroupMessage],
-	inline_dispatchers=[Twilight(Sp)]
-	))
-async def ghost_tank(app: Ariadne, group: Group, member: Member, para: MessageChain):
-	if len(p := para.get(Image)) == 2:
-		pics = asyncio.gather(*[i.http_to_bytes() for i in p])
-		b = BytesIO()
-		gray_car(*pics).save(b, format='PNG')
-		await app.sendGroupMessage(group, MessageChain.create(Image(data_bytes=b.getvalue())))
-	else:
-		await app.sendGroupMessage(group, MessageChain.create('你这图,数量不对啊kora'))
+    listening_events=[GroupMessage],
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("ghost_tank")], {"para": WildcardMatch()}
+    ))]
+))
+async def ghost_tank(app: Ariadne, group: Group, member: Member, para: WildcardMatch):
+    if len(p := para.result.get(Image)) == 2:
+        pics = asyncio.gather(*[i.http_to_bytes() for i in p])
+        b = BytesIO()
+        gray_car(*pics).save(b, format='PNG')
+        await app.sendGroupMessage(group, MessageChain.create(Image(data_bytes=b.getvalue())))
+    else:
+        await app.sendGroupMessage(group, MessageChain.create('你这图,数量不对啊kora'))
 
 # 感谢老司机
 # https://zhuanlan.zhihu.com/p/31164700
 def gray_car(wimg: bytes, bimg: bytes,
-	wlight: float = 1.0, blight: float = 0.3, chess: bool = False):
+    wlight: float = 1.0, blight: float = 0.3, chess: bool = False):
     """
     发黑白车
     :param wimg: 白色背景下的图片
