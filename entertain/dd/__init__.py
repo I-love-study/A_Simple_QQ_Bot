@@ -35,9 +35,9 @@ channel.author("I_love_study")
         [FullMatch("直播")], {"para": WildcardMatch()}
     ))]
 ))
-async def dd_watch(app: Ariadne, group: Group, sparkle: Sparkle):
+async def dd_watch(app: Ariadne, group: Group, para: WildcardMatch):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    name = sparkle.para.result.asDisplay().strip()
+    name = para.result.asDisplay().strip()
     if name not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return
@@ -66,9 +66,9 @@ async def dd_watch(app: Ariadne, group: Group, sparkle: Sparkle):
         [FullMatch("监控室")], {"para": WildcardMatch()}
     ))]
 ))
-async def dd_monitor(app: Ariadne, group: Group, sparkle: Sparkle):
+async def dd_monitor(app: Ariadne, group: Group, para: WildcardMatch):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    if name := sparkle.para.result.asDisplay().strip() not in dd_data:
+    if (name := para.result.asDisplay().strip()) not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return
     status_api = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id="
@@ -107,9 +107,9 @@ async def dd_monitor(app: Ariadne, group: Group, sparkle: Sparkle):
         [FullMatch("视频")], {"para": WildcardMatch()}
     ))]
 ))
-async def dd_video(app: Ariadne, group: Group, sparkle: Sparkle):
+async def dd_video(app: Ariadne, group: Group, para: WildcardMatch):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    name = sparkle.para.result.asDisplay().strip()
+    name = para.result.asDisplay().strip()
     if name not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
         return

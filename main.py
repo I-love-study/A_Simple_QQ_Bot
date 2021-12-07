@@ -7,7 +7,6 @@ from graia.broadcast import Broadcast
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 from graia.saya.builtins.broadcast import BroadcastBehaviour
 from graia.ariadne.app import Ariadne
-from graia.ariadne.adapter import CombinedAdapter
 from graia.ariadne.model import MiraiSession
 
 import decorators

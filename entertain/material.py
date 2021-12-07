@@ -20,7 +20,7 @@ channel.author("I_love_study")
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(Sparkle([FullMatch("learn")]))]
     ))
-async def learn(app: Ariadne, group: Group, message: MessageChain, member:Member):
+async def learn(app: Ariadne, group: Group):
     learning_urls=[
         'http://oss.fk.houdask.com/sys/v/19/10/f64809ee7ccd44319ffddf74c8c8abf7.rar',
         'http://oss.fk.houdask.com/sys/v/19/10/3f036ac7d1fc4912b2a11331c3ef33c5.rar',

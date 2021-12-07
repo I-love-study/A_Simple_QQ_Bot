@@ -26,10 +26,10 @@ channel.author("I_love_study")
         [FullMatch("anime")], {"para": WildcardMatch(optional=True)}
     ))]
 ))
-async def anime(app: Ariadne, group: Group, sparkle: Sparkle):
+async def anime(app: Ariadne, group: Group, para: WildcardMatch):
     today = int(datetime.fromisoformat(date.today().isoformat()).timestamp())
     date2ts = {'yesterday': today-86400, '':today, 'tomorrow': today+86400}
-    d = sparkle.para.result.asDisplay().strip() if sparkle.para.matched else ''
+    d = para.result.asDisplay().strip() if para.matched else ''
 
     if d in date2ts:
         date_ts = date2ts[d]

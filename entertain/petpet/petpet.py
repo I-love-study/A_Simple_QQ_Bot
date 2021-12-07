@@ -74,8 +74,8 @@ def make_petpet(file, squish=0):
         [FullMatch("摸头")], {"para": WildcardMatch()}        
     ))]
 ))
-async def petpet(app: Ariadne, group: Group, member: Member, sparkle: Sparkle):
-    user = sparkle.para.result.getFirst(At).target if sparkle.para.matched and sparkle.para.result.has(At) else member.id
+async def petpet(app: Ariadne, group: Group, member: Member, para: WildcardMatch):
+    user = para.result.getFirst(At).target if para.matched and para.result.has(At) else member.id
     profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"
     async with aiohttp.request("GET", profile_url) as r:
         profile = BytesIO(await r.read())

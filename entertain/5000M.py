@@ -29,8 +29,8 @@ channel.author("I_love_study")
         [RegexMatch("5000[Mm]")], {"para": WildcardMatch()}
     ))]
 ))
-async def give5000M(app: Ariadne, group: Group, sparkle: Sparkle):
-    if len(tag:=shlex.split(sparkle.para.result.asDisplay())) == 2:
+async def give5000M(app: Ariadne, group: Group, para: WildcardMatch):
+    if len(tag:=shlex.split(para.result.asDisplay())) == 2:
         pic = BytesIO()
         genImage(*tag).save(pic, format='PNG')
         msg = Image(data_bytes=pic.getvalue())

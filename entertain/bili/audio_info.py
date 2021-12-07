@@ -31,8 +31,8 @@ channel.author("I_love_study")
         [RegexMatch("AU|au")], {"para": WildcardMatch()}
     ))]
 ))
-async def audio_info(app: Ariadne, group: Group, sparkle: Sparkle):
-    if not (t := sparkle.para.result.asDisplay()).isdigit():
+async def audio_info(app: Ariadne, group: Group, para: WildcardMatch):
+    if not (t := para.result.asDisplay()).isdigit():
         return
 
     await app.sendGroupMessage(group, MessageChain.create([
