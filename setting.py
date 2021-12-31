@@ -1,11 +1,10 @@
 from graia.ariadne.app import Ariadne
-from graia.ariadne.message.parser.pattern import ElementMatch, FullMatch, WildcardMatch
 from graia.ariadne.model import Group, Member, MemberPerm
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, Sparkle
-from graia.ariadne.message.parser.pattern import FullMatch, RegexMatch
+from graia.ariadne.message.parser.twilight import Twilight
+from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -42,9 +41,9 @@ channel = Channel.current()
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage], decorators=[admin_check()],
-    inline_dispatchers=[Twilight(Sparkle(
+    inline_dispatchers=[Twilight(
         [FullMatch("设置查看")], {"custom_group": WildcardMatch(optional=True)}
-    ))]    
+    )]    
 ))
 async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group: WildcardMatch):
     x = PrettyTable()
@@ -80,14 +79,14 @@ async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group
         return b.getvalue()
         
     await app.sendGroupMessage(group, MessageChain.create([
-        Image.fromUnsafeBytes(await asyncio.to_thread(makepic))
+        Image(data_bytes=await asyncio.to_thread(makepic))
     ]))
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage], priority=4,
-    inline_dispatchers=[Twilight(Sparkle(
+    inline_dispatchers=[Twilight(
         [FullMatch("setting")], {"command": WildcardMatch(optional=True)}
-    ))]
+    )]
 ))
 async def setting(app: Ariadne, group: Group, member:Member, command: WildcardMatch):
     ss = session.query(QQGroup).filter(QQGroup.id == group.id).first()
@@ -139,7 +138,7 @@ async def setting(app: Ariadne, group: Group, member:Member, command: WildcardMa
     plugin_setting.set_defaults(command_type='plugin')
 
     try:
-        args = parser.parse_args(command.result.asDisplay() if command.matched() else "")
+        args = parser.parse_args(command.result.asDisplay() if command.matched else "")
     except ParserExit as e:
         ttf = ImageFont.truetype('src/font/SourceHanSans-Medium.otf', 60)
         word = std_output.getvalue()

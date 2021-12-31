@@ -22,9 +22,7 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sparkle(
-        [FullMatch("ph")], {"para": WildcardMatch()}
-    ))]
+    inline_dispatchers=[Twilight([FullMatch("ph")], {"para": WildcardMatch()})]
 ))
 async def pornhub(app: Ariadne, group: Group, para: WildcardMatch):
     if len(tag:=shlex.split(para.result.asDisplay())) == 2:

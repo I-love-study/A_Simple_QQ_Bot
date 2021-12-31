@@ -15,8 +15,7 @@ channel.description("获取热词解释")
 channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
-async def hotword(app: Ariadne,
-                  group: Group,
+async def hotword(app: Ariadne, group: Group,
                   messsage: MessageChain = DetectSuffix("是什么梗")):
     url = "https://api.jikipedia.com/go/search_definitions"
     headers = {"Client": "web", "Content-Type": "application/json;charset=UTF-8"}

@@ -3,7 +3,7 @@ from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
 from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
-from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.message.parser.twilight import Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -22,15 +22,13 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sparkle(
-        [FullMatch("百科")], {"para": WildcardMatch()}
-    ))]
+    inline_dispatchers=[Twilight([FullMatch("百科")], {"para": WildcardMatch()})]
 ))
 async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
     tags = para.result.asDisplay().strip().split(' ',1)
 
     bdurl = f'https://baike.baidu.com/item/{urllib.parse.quote(tags[0])}?force=1'
-    async with aiohttp.request("GET", bdurl, headers = headers, allow_redirects = True) as r:
+    async with aiohttp.request("GET", bdurl, headers=headers, allow_redirects=True) as r:
         if str(r.url).startswith('https://baike.baidu.com/error.html'):
             await app.sendGroupMessage(group, MessageChain.create([
                 Plain('sorry,百科并没有相关信息')]))
@@ -70,9 +68,7 @@ async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sparkle(
-        [FullMatch("热点")], {"para": WildcardMatch()}
-    ))]
+    inline_dispatchers=[Twilight([FullMatch("热点")], {"para": WildcardMatch()})]
 ))
 async def bdrd(app: Ariadne, group: Group, para: WildcardMatch):
     url = "https://top.baidu.com/board?tab=realtime"
