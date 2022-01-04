@@ -3,7 +3,7 @@ from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
 from graia.ariadne.message.parser.pattern import FullMatch
-from graia.ariadne.message.parser.twilight import Twilight
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -18,10 +18,10 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("learn")])]
+    inline_dispatchers=[Twilight(Sparkle([FullMatch("learn")]))]
     ))
 async def learn(app: Ariadne, group: Group):
-    learning_urls = [
+    learning_urls=[
         'http://oss.fk.houdask.com/sys/v/19/10/f64809ee7ccd44319ffddf74c8c8abf7.rar',
         'http://oss.fk.houdask.com/sys/v/19/10/3f036ac7d1fc4912b2a11331c3ef33c5.rar',
         'http://oss.fk.houdask.com/sys/v/19/10/461c32c3904e44f08b721600fcf32fb7.rar',
@@ -33,8 +33,7 @@ async def learn(app: Ariadne, group: Group):
         'http://oss.fk.houdask.com/sys/v/20/01/51dc2a25b3474022b982191174dda41c.zip',
         'http://oss.fk.houdask.com/sys/v/20/01/1043c2175f84478baa8be09ed92aac7c.zip',
         'http://oss.fk.houdask.com/sys/v/20/01/d15be5ac6027461794e399402bb8ddec.rar',
-        'http://oss.fk.houdask.com/sys/v/20/01/0dd665e49ec24999b772475fbf78a65a.zip'
-    ]
+        'http://oss.fk.houdask.com/sys/v/20/01/0dd665e49ec24999b772475fbf78a65a.zip']
     if random.randint(0,4) != 0:
         await app.sendGroupMessage(group, MessageChain.create(
             "你好惨哦\n没有学习资料看\n可惜了你没抽到呢"))

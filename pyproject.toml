@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "a_simple_qq_bot"
+version = "0.1.0"
+description = ""
+authors = ["I Love Study <1450069615@qq.com>"]
+license = "AGPL-v3"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+graia-ariadne = "^0.5.0"
+bilibili-api = "^9.1.0"
+prettytable = "^2.5.0"
+pycryptodome = "^3.12.0"
+qrcode = "^7.3.1"
+Pillow = "^9.0.0"
+SQLAlchemy = "^1.4.29"
+matplotlib = "^3.5.1"
+ujson = "^5.1.0"
+graiax-silkcoder = "0.1.2"
+graiax-msgparse = "^0.0.4"
+graia-scheduler = "^0.0.6"
+graia-saya = "^0.0.13"
+regex = "^2021.11.10"
+graia-broadcast = "^0.14.5"
+aiohttp = {version = ">=3.7.4.post0", extras = ["speedups"]}
+playwright = "^1.17.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

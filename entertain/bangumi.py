@@ -3,7 +3,7 @@ from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
 from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
-from graia.ariadne.message.parser.twilight import Twilight
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 
 from graia.saya import Saya, Channel
@@ -20,17 +20,18 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("bangumi")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight(Sparkle([
+        FullMatch("bangumi")], {"para": WildcardMatch()}
+    ))]
 ))
 async def anime(app: Ariadne, group: Group, para: WildcardMatch):
     bangumi_headers = {
-        "user-agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                       "AppleWebKit/537.36 (KHTML, like Gecko) "
-                       "Chrome/84.0.4147.135 Safari/537.36")
-    }
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "\
+                  "AppleWebKit/537.36 (KHTML, like Gecko) "\
+                  "Chrome/84.0.4147.135 Safari/537.36"}
     url = 'https://api.bgm.tv/search/subject/{}?type=2&responseGroup=Large&max_results=1'.format(
         quote(para.result.asDisplay().strip()))
-    async with aiohttp.request("GET", url, headers=bangumi_headers) as r:
+    async with aiohttp.request("GET", url, headers = bangumi_headers) as r:
         data = await r.json()
 
     if "code" in data.keys() and data["code"] == 404:

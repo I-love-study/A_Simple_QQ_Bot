@@ -4,29 +4,35 @@ from pathlib import Path
 import yaml
 from graia.saya import Saya
 from graia.broadcast import Broadcast
+from graia.scheduler import GraiaScheduler
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 from graia.saya.builtins.broadcast import BroadcastBehaviour
+from graia.scheduler.saya.behaviour import GraiaSchedulerBehaviour
 from graia.ariadne.app import Ariadne
 from graia.ariadne.model import MiraiSession
 
 import decorators
 from orm import *
 
-loop = asyncio.get_event_loop()
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
 bcc = Broadcast(loop=loop)
+sche = GraiaScheduler(loop = loop, broadcast = bcc)
 saya = Saya(bcc)
 saya.install_behaviours(BroadcastBehaviour(bcc))
+saya.install_behaviours(GraiaSchedulerBehaviour(sche))
 
 with open('configs.yml', encoding='UTF-8') as f:
     configs = yaml.safe_load(f)
 
-app = Ariadne.create(
+app = Ariadne(
     broadcast=bcc,
-    session=MiraiSession(
+    connect_info=MiraiSession(
         host=configs['miraiHost'],
         account=configs['account'],
         verify_key=configs["verify_key"],
-    ))
+    )
+)
 
 
 with saya.module_context():

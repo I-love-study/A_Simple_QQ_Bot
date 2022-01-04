@@ -3,7 +3,7 @@ from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
 from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
-from graia.ariadne.message.parser.twilight import Twilight
+from graia.ariadne.message.parser.twilight import Sparkle, Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -19,7 +19,9 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("萌娘百科")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight(Sparkle(
+        [FullMatch("萌娘百科")], {"para": WildcardMatch()}
+    ))]
 ))
 async def moegirl_search(app: Ariadne, group: Group, para: WildcardMatch):
     url = "https://zh.moegirl.org.cn/zh-cn/"+ quote(para.result.asDisplay().strip())
