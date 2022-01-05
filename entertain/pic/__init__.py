@@ -23,10 +23,10 @@ channel.author("I_love_study")
 async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: Member):
     if '小老弟' in message.asDisplay() and message.has(At):
         xiaolaodi = IMG.open(Path(__file__).parent/'小老弟.png')
-        if At(app.adapter.mirai_session.account) in message:
+        if At(app.account) in message:
             text = '我哪里像小老弟了,小老弟'
             to = member.id
-            user = app.adapter.mirai_session.account
+            user = app.account
         else:
             text = ''
             to = message.get(At)[0].target
@@ -51,5 +51,5 @@ async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: M
         out = BytesIO()
         xiaolaodi.save(out, format='PNG')
         await app.sendGroupMessage(group, MessageChain.create([
-            Plain(text = text),
+            Plain(text=text),
             Image(data_bytes=out.getvalue())]))

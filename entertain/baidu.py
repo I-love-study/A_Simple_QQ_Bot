@@ -2,8 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
-from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -22,9 +21,7 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sparkle(
-        [FullMatch("百科")], {"para": WildcardMatch()}
-    ))]
+    inline_dispatchers=[Twilight([FullMatch("百科")], {"para": WildcardMatch()})]
 ))
 async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
     tags = para.result.asDisplay().strip().split(' ',1)
@@ -70,9 +67,7 @@ async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sparkle(
-        [FullMatch("热点")], {"para": WildcardMatch()}
-    ))]
+    inline_dispatchers=[Twilight([FullMatch("热点")], {"para": WildcardMatch()})]
 ))
 async def bdrd(app: Ariadne, group: Group, para: WildcardMatch):
     url = "https://top.baidu.com/board?tab=realtime"

@@ -2,8 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.pattern import FullMatch, WildcardMatch
-from graia.ariadne.message.parser.twilight import Sparkle, Twilight
+from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch
 from graia.ariadne.model import Group, Member
 
 from graia.saya import Saya, Channel
@@ -20,9 +19,7 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(Sparkle([
-        FullMatch("bangumi")], {"para": WildcardMatch()}
-    ))]
+    inline_dispatchers=[Twilight([FullMatch("bangumi")], {"para": WildcardMatch()})]
 ))
 async def anime(app: Ariadne, group: Group, para: WildcardMatch):
     bangumi_headers = {
