@@ -67,4 +67,4 @@ with saya.module_context():
                              .decorators.append(config_check_deco))
 
 if __name__ == '__main__':
-    loop.run_until_complete(app.lifecycle())
+    app.launch_blocking()
