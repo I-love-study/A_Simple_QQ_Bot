@@ -23,7 +23,7 @@ channel.author("I_love_study")
 async def moegirl_search(app: Ariadne, group: Group, para: WildcardMatch):
     url = "https://zh.moegirl.org.cn/zh-cn/"+ quote(para.result.asDisplay().strip())
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
+        browser = await p.firefox.launch()
         context = await browser.new_context(device_scale_factor=2.0)
         page = await context.new_page()
         await app.sendGroupMessage(group, MessageChain.create([
