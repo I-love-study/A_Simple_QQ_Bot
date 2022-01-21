@@ -21,20 +21,22 @@ class ConfigCheck(Decorator):
 
     async def target(self, interface: DecoratorInterface):
         try:
-            group  = (await interface.dispatcher_interface.lookup_param("group", Group, None)).id
+            group = (await interface.dispatcher_interface.lookup_param(
+                "group", Group, None, [])).id
         except RequirementCrashed:
-            group  = None
+            group = None
         try:
-            member = (await interface.dispatcher_interface.lookup_param("member", Member, None)).id
+            member = (await interface.dispatcher_interface.lookup_param(
+                "member", Member, None, [])).id
         except RequirementCrashed:
             member = None
 
         search = session.query(ModuleSetting).join(Module).filter(
-            Module.name == self.name, 
+            Module.name == self.name,
             Module.folder == self.folder,
             ModuleSetting.group_id == group).first()
 
-        if search and not search.switch:
+        if not (search and search.switch):
             raise ExecutionStop()
 
         search = session.query(QQGroup).filter_by(id=group).first()
@@ -60,11 +62,13 @@ class SettingCheck(Decorator):
 
     async def target(self, interface: DecoratorInterface):
         try:
-            group  = (await interface.dispatcher_interface.lookup_param("group", Group, None)).id
+            group  = (await interface.dispatcher_interface.lookup_param(
+                "group", Group, None, [])).id
         except RequirementCrashed:
             group  = None
         try:
-            member = (await interface.dispatcher_interface.lookup_param("member", Member, None)).id
+            member = (await interface.dispatcher_interface.lookup_param(
+                "member", Member, None, [])).id
         except RequirementCrashed:
             member = None
 
@@ -78,7 +82,7 @@ class SettingCheck(Decorator):
             ng and group in ng,
             am and member not in am,
             nm and member in nm
-            )):raise ExecutionStop()
+            )):            raise ExecutionStop()
 
 def config_check(
     active_groups: list = [],
@@ -98,14 +102,14 @@ def config_check(
             ng and group.id in ng,
             am and member.id not in am,
             nm and member.id in nm
-            )):raise ExecutionStop()
+            )):            raise ExecutionStop()
 
     return Depend(config_wrapper)
 
 def admin_check():
     async def admin_wrapper(member: Member):
         '''判断是否为管理员/群主/'''
-        if (member.permission not in [MemberPerm.Owner, MemberPerm.Administrator] and 
+        if (member.permission not in [MemberPerm.Owner, MemberPerm.Administrator] and
             member.id not in ua
         ):
             raise ExecutionStop()
