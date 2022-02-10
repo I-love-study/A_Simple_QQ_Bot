@@ -10,7 +10,6 @@ from graia.saya.builtins.broadcast.schema import ListenerSchema
 from io import BytesIO
 from pathlib import Path
 
-from bilibili_api.audio import Audio
 from PIL import Image as IMG, ImageDraw, ImageFont
 import qrcode
 import aiohttp
@@ -39,7 +38,10 @@ async def audio_info(app: Ariadne, group: Group, para: WildcardMatch):
     ]))
 
 async def audio_make(auid):
-    data = await Audio(auid).get_info()
+    url = "https://www.bilibili.com/audio/music-service-c/web/song/info"
+    params = {"sid": auid}
+    async with aiohttp.request("GET", url, params=params) as r:
+        data = await r.json()
 
     qr = qrcode.QRCode(
         version=3,
@@ -122,9 +124,8 @@ async def audio_make(auid):
     bgd.text((600, 350), f"简介\n{ana}",
             fill=(229, 229, 229), font=font)
     
-    b = BytesIO()
     #转换为RGB和降低compress_level都是为了加速导出速度 
-    bg.convert("RGB").save(b, format="png", compress_level=1)
+    bg.convert("RGB").save(b := BytesIO(), format="png", compress_level=1)
     return b.getvalue()
     
 

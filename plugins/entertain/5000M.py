@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, SpacePolicy
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -24,12 +24,15 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([RegexMatch("5000[Mm]")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight(
+        [RegexMatch("5000[mM]", space=SpacePolicy.FORCE)],
+        {"para": WildcardMatch()}
+    )]
 ))
 async def give5000M(app: Ariadne, group: Group, para: WildcardMatch):
+    print(para.result.asDisplay())
     if len(tag:=shlex.split(para.result.asDisplay())) == 2:
-        pic = BytesIO()
-        genImage(*tag).save(pic, format='PNG')
+        genImage(*tag).save(pic := BytesIO(), format='PNG')
         msg = Image(data_bytes=pic.getvalue())
     else:
         msg = Plain('消息有误，请重试')

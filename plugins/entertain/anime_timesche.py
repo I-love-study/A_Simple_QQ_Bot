@@ -1,17 +1,18 @@
+from datetime import date, datetime
+from io import BytesIO
+
+import aiohttp
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import (FullMatch, SpacePolicy,
+                                                   Twilight, WildcardMatch)
 from graia.ariadne.model import Group, Member
-
-from graia.saya import Saya, Channel
+from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
-
-import aiohttp
-from datetime import date, datetime
-from PIL import Image as IMG, ImageDraw, ImageFont
-from io import BytesIO
+from PIL import Image as IMG
+from PIL import ImageDraw, ImageFont
 
 channel = Channel.current()
 
@@ -21,7 +22,10 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("anime")], {"para": WildcardMatch(optional=True)})]
+    inline_dispatchers=[Twilight(
+        [FullMatch("anime")],
+        {"para": WildcardMatch(optional=True)}
+    )]
 ))
 async def anime(app: Ariadne, group: Group, para: WildcardMatch):
     today = int(datetime.fromisoformat(date.today().isoformat()).timestamp())
@@ -60,7 +64,6 @@ async def anime(app: Ariadne, group: Group, para: WildcardMatch):
             final_draw.text((300+ttf.getsize(single['pub_time'])[0]+30, 150+300*n),
                 single['pub_index'] if 'pub_index' in single else single['delay_index']+single['delay_reason'], 
                 font=ttf, fill=(0,160,216))
-        out = BytesIO()
-        final_back.save(out, format='JPEG')
+        final_back.save(out := BytesIO(), format='JPEG')
     await app.sendGroupMessage(group, MessageChain.create([
         Image(data_bytes=out.getvalue())]))

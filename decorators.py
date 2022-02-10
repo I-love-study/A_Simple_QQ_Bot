@@ -21,13 +21,11 @@ class ConfigCheck(Decorator):
 
     async def target(self, interface: DecoratorInterface):
         try:
-            group = (await interface.dispatcher_interface.lookup_param(
-                "group", Group, None, [])).id
+            group = (await interface.dispatcher_interface.lookup_param("group", Group, None)).id
         except RequirementCrashed:
             group = None
         try:
-            member = (await interface.dispatcher_interface.lookup_param(
-                "member", Member, None, [])).id
+            member = (await interface.dispatcher_interface.lookup_param("member", Member, None)).id
         except RequirementCrashed:
             member = None
 
@@ -36,13 +34,13 @@ class ConfigCheck(Decorator):
             Module.folder == self.folder,
             ModuleSetting.group_id == group).first()
 
-        if not (search and search.switch):
-            raise ExecutionStop()
+        if not (search and search.module.switch and search.switch):
+            raise ExecutionStop
 
         search = session.query(QQGroup).filter_by(id=group).first()
 
         if search and member in search.black_list:
-            raise ExecutionStop()
+            raise ExecutionStop
 
 class SettingCheck(Decorator):
     pre = True
@@ -62,13 +60,11 @@ class SettingCheck(Decorator):
 
     async def target(self, interface: DecoratorInterface):
         try:
-            group  = (await interface.dispatcher_interface.lookup_param(
-                "group", Group, None, [])).id
+            group = (await interface.dispatcher_interface.lookup_param("group", Group, None)).id
         except RequirementCrashed:
-            group  = None
+            group = None
         try:
-            member = (await interface.dispatcher_interface.lookup_param(
-                "member", Member, None, [])).id
+            member = (await interface.dispatcher_interface.lookup_param("member", Member, None)).id
         except RequirementCrashed:
             member = None
 

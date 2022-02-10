@@ -1,0 +1,103 @@
+import asyncio
+import datetime
+import sqlite3
+from io import BytesIO
+from pathlib import Path
+
+import matplotlib
+import matplotlib.font_manager as fm
+import matplotlib.pyplot as plt
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import *
+from graia.ariadne.model import Group, Member
+from graia.saya import Channel, Saya
+from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graia.scheduler import timers
+from graia.scheduler.saya.schema import SchedulerSchema
+
+matplotlib.use('Agg')
+
+def get_month(d=datetime.date.today()):
+    return f"{d.year}-{str(d.month).zfill(2)}"
+
+p = Path('data/chat_log')
+if not p.exists(): p.mkdir(parents=True, exist_ok=True)
+
+log_name = get_month()
+conn = sqlite3.connect(f'data/chat_log/{log_name}.db', isolation_level = None)
+cur = conn.cursor()
+cur.execute('''CREATE TABLE IF NOT EXISTS log (
+    SENDTIME  DATETIME     NOT NULL,
+    GROUPID    INTEGER     NOT NULL,
+    MEMBERID   INTEGER     NOT NULL,
+    MESSAGE       TEXT     NOT NULL
+    );''')
+
+saya = Saya.current()
+channel = Channel.current()
+admin_group = saya.access('all_setting')['admin_group']
+
+@channel.use(SchedulerSchema(timers.crontabify('0 0 * * *')))
+async def update_log(app: Ariadne):
+    global log_name, conn, cur
+    await asyncio.sleep(3)
+    d = get_month()
+    if d != log_name:
+        conn_, cur_ = conn, cur
+        conn = sqlite3.connect(f'data/chat_log/{log_name}.db', isolation_level = None)
+        cur = conn.cursor()
+        cur.execute('''CREATE TABLE IF NOT EXISTS log (
+            SENDTIME  DATETIME     NOT NULL,
+            GROUPID    INTEGER     NOT NULL,
+            MEMBERID   INTEGER     NOT NULL,
+            MESSAGE       TEXT     NOT NULL
+            );''')
+    
+        sql_cmd = "SELECT * from log where SENDTIME >= datetime('Now', 'localtime', 'start of day')"
+        for data in cur_.execute(sql_cmd):
+            cur.execute("INSERT into log values (?, ?, ?, ?)", data)
+        cur_.execute("DELETE from log where SENDTIME >= datetime('Now', 'localtime', 'start of day')")
+        cur_.close()
+        conn_.close()
+
+
+@channel.use(SchedulerSchema(timers.crontabify('1 0 * * *')))
+async def send_log(app: Ariadne):
+    await asyncio.sleep(5)
+    send_date = datetime.date.today()-datetime.timedelta(days = 1)
+    #send_date=datetime.date.today().isoformat()
+    conn_ = sqlite3.connect(f'data/chat_log/{get_month(send_date)}.db')
+    cur_ = conn_.cursor()
+    sql_cmd = (
+        "SELECT COUNT(SENDTIME) from log where "
+        "SENDTIME >= datetime('Now', 'localtime', 'start of day', '-{} hours') and "
+        "SENDTIME < datetime('Now', 'localtime', 'start of day', '-{} hours')")
+    data = [list(cur_.execute(sql_cmd.format(t+1, t)))[0][0] for t in reversed(range(24))]
+
+    font = fm.FontProperties(fname='src/font/SourceHanSans-Medium.otf')
+    plt.figure(figsize=(10,5), dpi=100)
+    plt.style.use("dark_background")
+    plt.xlabel('时间(h)', fontproperties=font)
+    plt.ylabel('接收群数据', fontproperties=font)
+    plt.title(f'今日机器人数据查看\n累计接收信息{sum(data)}条', fontproperties=font)
+    plt.plot(list(range(24)), data, color = "#0C88DA", 
+        marker='o', markerfacecolor = '#787878',markersize = 5)
+    for a, b in zip(list(range(24)), data):
+        plt.text(a, b, b, ha='center', va='bottom', fontsize=10, fontproperties=font)
+    #plt.show()
+    read = BytesIO()
+    plt.savefig(read, format = "png", bbox_inches='tight')
+    plt.clf()
+    await app.sendGroupMessage(admin_group, MessageChain.create([
+        Plain('今日机器人接收信息：'),
+        Image.fromUnsafeBytes(read.getvalue()),
+        ]))
+    cur_.close()
+    conn_.close()
+
+@channel.use(ListenerSchema(listening_events=[GroupMessage]))
+async def log(app: Ariadne, group: Group, message: MessageChain, member:Member):
+    data = [datetime.datetime.now(), group.id, member.id, message.asPersistentString(binary=False)]
+    cur.execute("INSERT into log values (?, ?, ?, ?)", data)

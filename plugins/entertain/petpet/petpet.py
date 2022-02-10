@@ -60,9 +60,9 @@ def make_petpet(file, squish=0):
         gif_frame.paste(reprofile, (spec[0], spec[1]))
         gif_frame.paste(hand, (0, int(squish * squish_translation_factor[i])), hand)
         gifs.append(gif_frame)
-    ret = BytesIO()
     gifs[0].save(
-        ret,format='gif',
+        ret := BytesIO(),
+        format='gif',
         save_all=True, append_images=gifs,
         duration=0.05, transparency=0)
     return ret.getvalue()

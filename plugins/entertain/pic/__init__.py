@@ -48,8 +48,7 @@ async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: M
                                 to_box[3] - to_box[1]))
         xiaolaodi.paste(user_pic,user_box)
         xiaolaodi.paste(to_pic,to_box)
-        out = BytesIO()
-        xiaolaodi.save(out, format='PNG')
+        xiaolaodi.save(out := BytesIO(), format='PNG')
         await app.sendGroupMessage(group, MessageChain.create([
             Plain(text=text),
             Image(data_bytes=out.getvalue())]))

@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import Twilight, ParamMatch
 from graia.ariadne.model import Group, Member
 
 from graia.saya import Channel
@@ -24,13 +24,12 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("ghost_tank")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight.from_command("ghost_tank {para}")]
 ))
-async def ghost_tank(app: Ariadne, group: Group, member: Member, para: WildcardMatch):
+async def ghost_tank(app: Ariadne, group: Group, member: Member, para: ParamMatch):
     if len(p := para.result.get(Image)) == 2:
-        pics = asyncio.gather(*[i.http_to_bytes() for i in p])
-        b = BytesIO()
-        gray_car(*pics).save(b, format='PNG')
+        pics = asyncio.gather(*[i.get_bytes() for i in p])
+        gray_car(*pics).save(b := BytesIO(), format='PNG')
         await app.sendGroupMessage(group, MessageChain.create(Image(data_bytes=b.getvalue())))
     else:
         await app.sendGroupMessage(group, MessageChain.create('你这图,数量不对啊kora'))

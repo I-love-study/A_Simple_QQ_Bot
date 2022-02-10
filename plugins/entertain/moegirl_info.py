@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import Twilight, ParamMatch
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -18,12 +18,12 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("萌娘百科")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight.from_command("萌娘百科 {para}")]
 ))
-async def moegirl_search(app: Ariadne, group: Group, para: WildcardMatch):
+async def moegirl_search(app: Ariadne, group: Group, para: ParamMatch):
     url = "https://zh.moegirl.org.cn/zh-cn/"+ quote(para.result.asDisplay().strip())
     async with async_playwright() as p:
-        browser = await p.firefox.launch()
+        browser = await p.chromium.launch()
         context = await browser.new_context(device_scale_factor=2.0)
         page = await context.new_page()
         await app.sendGroupMessage(group, MessageChain.create([
@@ -47,9 +47,7 @@ async def moegirl_search(app: Ariadne, group: Group, para: WildcardMatch):
             if card is not None:
                 break
         else:
-            await app.sendGroupMessage(group, MessageChain.create([
-                Plain("错误：找不到人物信息卡片")
-            ]))
+            await app.sendGroupMessage(group, MessageChain.create("错误：找不到人物信息卡片"))
             await browser.close()
             return
         clip = await card.bounding_box()
@@ -57,6 +55,4 @@ async def moegirl_search(app: Ariadne, group: Group, para: WildcardMatch):
         pic = await page.screenshot(clip=clip, type='png', full_page=True)
         await browser.close()
     
-    await app.sendGroupMessage(group, MessageChain.create([
-        Image(data_bytes=pic)
-    ]))
+    await app.sendGroupMessage(group, MessageChain.create(Image(data_bytes=pic)))
