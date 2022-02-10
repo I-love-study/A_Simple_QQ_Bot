@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch
+from graia.ariadne.message.parser.twilight import Twilight
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -22,18 +22,25 @@ channel.name("COVID-19")
 channel.description("发送'COVID-19'获取新冠确诊病例排名前20的国家")
 channel.author("I_love_study")
 
+font_path = "src/font/SourceHanSans-Medium.otf"  # Your font path goes here
+fm.fontManager.addfont(font_path)
+prop = fm.FontProperties(fname=font_path)
+
+plt.rcParams['font.family'] = prop.get_name()
+plt.rcParams['mathtext.fontset'] = 'cm'  # 'cm' (Computer Modern)
+
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("COVID-19")])]
+    inline_dispatchers=[Twilight.from_command("COVID-19")]
 ))
 async def COVID(app: Ariadne, group: Group):
-    back = await get_COVID_19()
+    top_10, img = await get_COVID_19()
     await app.sendGroupMessage(group, MessageChain.create([
-        Plain("新型冠状病毒前10:\n"+"\n".join(back[0])),
-        Image(data_bytes=back[1])
-        ]))
+        Plain("新型冠状病毒前10:\n"+"\n".join(top_10)),
+        Image(data_bytes=img)
+    ]))
 
-async def get_COVID_19(Pic=True):
+async def get_COVID_19(pic=True):
     headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
                        'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
     async with aiohttp.request("GET", "https://c.m.163.com/ug/api/wuhan/app/data/list-total", headers=headers) as r:
@@ -53,10 +60,9 @@ async def get_COVID_19(Pic=True):
         a['today']['confirm'] if a['today']['confirm'] != None else 0
         for a in country_total[:20]
     ]
-    if Pic:
+    if pic:
         # 创建一个点数为 8 x 6 的窗口, 并设置分辨率为 80像素/每英寸
         plt.figure(figsize=(30, 20), dpi=100)
-        font = fm.FontProperties(fname='src/font/SourceHanSans-Medium.otf')
         plt.style.use("dark_background")
         # 再创建一个规格为 1 x 1 的子图
         # plt.subplot(1, 1, 1)
@@ -70,11 +76,11 @@ async def get_COVID_19(Pic=True):
         plt.bar(index, y1, width, label="昨日累计人数", color="#FF0000")
         plt.bar(index, y2, width, label="今日新增人数", color="#FF8C00",bottom=y1)
         # 设置横轴标签
-        plt.xlabel('各个国家', fontproperties=font)
+        plt.xlabel('各个国家')
         # 设置纵轴标签
-        plt.ylabel('累计感染人数', fontproperties=font)
+        plt.ylabel('累计感染人数')
         # 添加标题
-        plt.title('各国新冠病毒感染人数排行', fontproperties=font)
+        plt.title('各国新冠病毒感染人数排行')
         # 添加纵横轴的刻度
         plt.xticks(index, x)
         # 添加图例
@@ -88,6 +94,6 @@ async def get_COVID_19(Pic=True):
         read = BytesIO()
         plt.savefig(read, format = "png", bbox_inches='tight')
         plt.clf()
-        return [get,read.getvalue()]
+        return get,read.getvalue()
     else:
         return get

@@ -21,6 +21,7 @@ class Module(Base):
     id      = Column(Integer, primary_key=True)
     folder  = Column(String, nullable=False)
     name    = Column(String, nullable=False)
+    switch  = Column(Boolean, default=True)
     setting = relationship("ModuleSetting", back_populates="module")
 
 class ModuleSetting(Base):

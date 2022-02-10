@@ -15,12 +15,10 @@ channel.description("获取热词解释")
 channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
-async def hotword(app: Ariadne,
-                  group: Group,
-                  messsage: MessageChain = DetectSuffix("是什么梗")):
+async def hotword(app: Ariadne, group: Group, message: MessageChain = DetectSuffix("是什么梗")):
     url = "https://api.jikipedia.com/go/search_definitions"
     headers = {"Client": "web", "Content-Type": "application/json;charset=UTF-8"}
-    payload = {"phrase": messsage.asDisplay(), "page": 1}
+    payload = {"phrase": message.asDisplay(), "page": 1}
     async with aiohttp.request("POST", url, headers=headers, json=payload) as r:
         result = (await r.json())["data"][0]
 

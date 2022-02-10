@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, SpacePolicy
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel, Saya
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -30,7 +30,8 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("直播")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight(
+        [FullMatch("直播", space=SpacePolicy.FORCE)], {"para": WildcardMatch()})]
 ))
 async def dd_watch(app: Ariadne, group: Group, para: WildcardMatch):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
@@ -59,7 +60,9 @@ async def dd_watch(app: Ariadne, group: Group, para: WildcardMatch):
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("监控室")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight(
+        [FullMatch("监控室", space=SpacePolicy.FORCE)], {"para": WildcardMatch()}
+    )]
 ))
 async def dd_monitor(app: Ariadne, group: Group, para: WildcardMatch):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
@@ -91,14 +94,15 @@ async def dd_monitor(app: Ariadne, group: Group, para: WildcardMatch):
             final_back.paste(pic, (1280*w,720*h))
         else:
             break
-    out = BytesIO()
-    final_back.save(out, format='JPEG', quality = 80)
+    final_back.save(out := BytesIO(), format='JPEG', quality = 80)
     await app.sendGroupMessage(group, MessageChain.create([
         Image(data_bytes=out.getvalue())]))
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("视频")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight(
+        [FullMatch("视频", space=SpacePolicy.FORCE)], {"para": WildcardMatch()}
+    )]
 ))
 async def dd_video(app: Ariadne, group: Group, para: WildcardMatch):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))

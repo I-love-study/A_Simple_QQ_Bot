@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, SpacePolicy
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -17,7 +17,10 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("bar_music")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight(
+        [FullMatch("bar_music", space=SpacePolicy.FORCE)],
+        {"para": WildcardMatch()}
+    )]
 ))
 async def bar_music(app: Ariadne, group: Group, para: WildcardMatch):
     song_name = para.result.asDisplay().strip() 
@@ -28,7 +31,7 @@ async def bar_music(app: Ariadne, group: Group, para: WildcardMatch):
     search_data = await Netease.search(song_name)
     try:
         download = await Netease.download_song(search_data[0]['id'])
-    except Exception as e:
+    except Exception:
         await app.sendGroupMessage(group, MessageChain.create('不知道为什么，但是我就是放不了'))
         return
     music_b = await silkcoder.encode(download, rate=80000, ss=0, t=60)
