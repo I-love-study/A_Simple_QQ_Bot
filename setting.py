@@ -41,7 +41,7 @@ channel = Channel.current()
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage], decorators=[admin_check()],
     inline_dispatchers=[Twilight(
-        [FullMatch("设置查看", space=SpacePolicy.FORCE)],
+        [FullMatch("设置查看")],
         {"custom_group": WildcardMatch(optional=True)}
     )]
 ))
@@ -61,7 +61,7 @@ async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group
         return
 
     def status(b):
-        if b.module.switch:
+        if not b.module.switch:
             return "➖"
         elif b.switch:
             return "✅"
@@ -91,7 +91,7 @@ async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group
 async def setting(app: Ariadne, group: Group, member:Member, command: WildcardMatch):
     ss = session.query(QQGroup).filter(QQGroup.id == group.id).first()
 
-    if any((ss is None and member.id in saya.access('all_setting')['ultra_administration'],
+    if not any((ss is None and member.id in saya.access('all_setting')['ultra_administration'],
             ss.Permission == 'ultra_administration'
             and member.id in saya.access('all_setting')['ultra_administration'],
             ss.Permission == "owner" and member.permission == MemberPerm.Owner,
