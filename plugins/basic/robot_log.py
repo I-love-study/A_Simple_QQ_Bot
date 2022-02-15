@@ -92,7 +92,7 @@ async def send_log(app: Ariadne):
     plt.clf()
     await app.sendGroupMessage(admin_group, MessageChain.create([
         Plain('今日机器人接收信息：'),
-        Image.fromUnsafeBytes(read.getvalue()),
+        Image(data_bytes=read.getvalue()),
         ]))
     cur_.close()
     conn_.close()

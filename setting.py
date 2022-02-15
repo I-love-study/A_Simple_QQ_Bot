@@ -91,11 +91,11 @@ async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group
 async def setting(app: Ariadne, group: Group, member:Member, command: WildcardMatch):
     ss = session.query(QQGroup).filter(QQGroup.id == group.id).first()
 
-    if not any((ss is None and member.id in saya.access('all_setting')['ultra_administration'],
-            ss.Permission == 'ultra_administration'
-            and member.id in saya.access('all_setting')['ultra_administration'],
-            ss.Permission == "owner" and member.permission == MemberPerm.Owner,
-            ss.Permission == "administrator" and member.permission == MemberPerm.Administrator)):
+    if not ((ss is None and member.id in saya.access('all_setting')['ultra_administration']) or
+            (ss.Permission == 'ultra_administration'
+             and member.id in saya.access('all_setting')['ultra_administration']) or
+            (ss.Permission == "owner" and member.permission == MemberPerm.Owner) or
+            (ss.Permission == "administrator" and member.permission == MemberPerm.Administrator)):
         return
 
     msg = []
@@ -208,7 +208,7 @@ async def setting(app: Ariadne, group: Group, member:Member, command: WildcardMa
 
     elif args.command_type == 'plugin':
 
-        if args.groups is None:
+        if args.group is None:
             s = args.module.split('.')
             q1 = session.query(Module).filter(Module.folder == args.module)
             q2 = session.query(Module).filter(Module.folder == '.'.join(s[:-1]),
