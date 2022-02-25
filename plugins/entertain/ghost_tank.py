@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, ParamMatch
+from graia.ariadne.message.parser.twilight import Twilight, MatchResult
 from graia.ariadne.model import Group, Member
 
 from graia.saya import Channel
@@ -26,7 +26,7 @@ channel.author("I_love_study")
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight.from_command("ghost_tank {para}")]
 ))
-async def ghost_tank(app: Ariadne, group: Group, member: Member, para: ParamMatch):
+async def ghost_tank(app: Ariadne, group: Group, member: Member, para: MatchResult):
     if len(p := para.result.get(Image)) == 2:
         pics = asyncio.gather(*[i.get_bytes() for i in p])
         gray_car(*pics).save(b := BytesIO(), format='PNG')

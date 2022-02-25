@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, MatchResult
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -71,7 +71,7 @@ def make_petpet(file, squish=0):
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight([FullMatch("摸头"), WildcardMatch() @ "para"])]
 ))
-async def petpet(app: Ariadne, group: Group, member: Member, para: WildcardMatch):
+async def petpet(app: Ariadne, group: Group, member: Member, para: MatchResult):
     user = para.result.getFirst(At).target if para.matched and para.result.has(At) else member.id
     profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"
     async with aiohttp.request("GET", profile_url) as r:

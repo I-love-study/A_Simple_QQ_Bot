@@ -1,13 +1,15 @@
+from expand import Netease
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, SpacePolicy
+from graia.ariadne.message.parser.twilight import (FullMatch, MatchResult,
+                                                   SpacePolicy, Twilight,
+                                                   WildcardMatch)
 from graia.ariadne.model import Group, Member
-from graia.saya import Saya, Channel
+from graia.saya import Channel, Saya
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 from graiax import silkcoder
-from expand import Netease
 
 channel = Channel.current()
 
@@ -22,7 +24,7 @@ channel.author("I_love_study")
          WildcardMatch() @ "para"]
     )]
 ))
-async def bar_music(app: Ariadne, group: Group, para: WildcardMatch):
+async def bar_music(app: Ariadne, group: Group, para: MatchResult):
     song_name = para.result.asDisplay().strip() 
     if song_name == '':
         await app.sendGroupMessage(group, MessageChain.create('点啥歌？'))

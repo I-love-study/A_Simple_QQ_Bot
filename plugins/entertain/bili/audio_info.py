@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, MatchResult
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -29,7 +29,7 @@ channel.author("I_love_study")
         [RegexMatch("AU|au"), WildcardMatch() @ "para"]
     )]
 ))
-async def audio_info(app: Ariadne, group: Group, para: WildcardMatch):
+async def audio_info(app: Ariadne, group: Group, para: MatchResult):
     if not (t := para.result.asDisplay()).isdigit():
         return
 

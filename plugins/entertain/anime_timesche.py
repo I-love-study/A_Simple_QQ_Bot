@@ -6,7 +6,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import (FullMatch, SpacePolicy,
+from graia.ariadne.message.parser.twilight import (FullMatch, MatchResult,
                                                    Twilight, WildcardMatch)
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
@@ -27,7 +27,7 @@ channel.author("I_love_study")
          WildcardMatch(optional=True) @ "para"]
     )]
 ))
-async def anime(app: Ariadne, group: Group, para: WildcardMatch):
+async def anime(app: Ariadne, group: Group, para: MatchResult):
     today = int(datetime.fromisoformat(date.today().isoformat()).timestamp())
     date2ts = {'yesterday': today-86400, '':today, 'tomorrow': today+86400}
     d = para.result.asDisplay().strip() if para.matched else ''

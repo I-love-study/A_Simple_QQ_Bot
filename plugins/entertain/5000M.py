@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, SpacePolicy
+from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, SpacePolicy, MatchResult
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -29,7 +29,7 @@ channel.author("I_love_study")
          WildcardMatch() @ "para"]
     )]
 ))
-async def give5000M(app: Ariadne, group: Group, para: WildcardMatch):
+async def give5000M(app: Ariadne, group: Group, para: MatchResult):
     print(para.result.asDisplay())
     if len(tag:=shlex.split(para.result.asDisplay())) == 2:
         genImage(*tag).save(pic := BytesIO(), format='PNG')

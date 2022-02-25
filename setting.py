@@ -3,7 +3,7 @@ from graia.ariadne.model import Group, Member, MemberPerm
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, SpacePolicy
+from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, MatchResult
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
@@ -44,7 +44,7 @@ channel = Channel.current()
         [FullMatch("设置查看"), WildcardMatch(optional=True) @ "custom_group"]
     )]
 ))
-async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group: WildcardMatch):
+async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group: MatchResult):
     x = PrettyTable()
     x.hrules = FRAME
     x.vrules = FRAME
@@ -87,7 +87,7 @@ async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group
         [FullMatch("setting"), WildcardMatch(optional=True) @ "command"]
     )]
 ))
-async def setting(app: Ariadne, group: Group, member:Member, command: WildcardMatch):
+async def setting(app: Ariadne, group: Group, member:Member, command: MatchResult):
     ss = session.query(QQGroup).filter(QQGroup.id == group.id).first()
 
     if not ((ss is None and member.id in saya.access('all_setting')['ultra_administration']) or

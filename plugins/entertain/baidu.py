@@ -1,13 +1,17 @@
+import urllib
+
+import aiohttp
+import ujson as json
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, SpacePolicy
+from graia.ariadne.message.parser.twilight import (FullMatch, MatchResult,
+                                                   SpacePolicy, Twilight,
+                                                   WildcardMatch)
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
-import aiohttp, urllib
-import ujson as json
 from lxml import etree
 
 headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
@@ -26,7 +30,7 @@ channel.author("I_love_study")
          WildcardMatch() @ "para"]
     )]
 ))
-async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
+async def bdbk(app: Ariadne, group: Group, para: MatchResult):
     tags = para.result.asDisplay().strip().split(' ',1)
 
     bdurl = f'https://baike.baidu.com/item/{urllib.parse.quote(tags[0])}?force=1'
@@ -68,9 +72,9 @@ async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("热点"),WildcardMatch() @ "para"])]
+    inline_dispatchers=[Twilight([FullMatch("热点"), WildcardMatch() @ "para"])]
 ))
-async def bdrd(app: Ariadne, group: Group, para: WildcardMatch):
+async def bdrd(app: Ariadne, group: Group, para: MatchResult):
     url = "https://top.baidu.com/board?tab=realtime"
     async with aiohttp.request("GET", url, headers=headers) as r:
         reponse = await r.text()

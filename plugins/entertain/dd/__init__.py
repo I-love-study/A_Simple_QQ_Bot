@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, SpacePolicy
+from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, SpacePolicy, MatchResult
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel, Saya
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -34,7 +34,7 @@ channel.author("I_love_study")
         [FullMatch("直播").space(SpacePolicy.FORCE), WildcardMatch() @ "para"]
     )]
 ))
-async def dd_watch(app: Ariadne, group: Group, para: WildcardMatch):
+async def dd_watch(app: Ariadne, group: Group, para: MatchResult):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
     name = para.result.asDisplay().strip()
     if name not in dd_data:
@@ -65,7 +65,7 @@ async def dd_watch(app: Ariadne, group: Group, para: WildcardMatch):
         [FullMatch("监控室").space(SpacePolicy.FORCE), WildcardMatch() @ "para"]
     )]
 ))
-async def dd_monitor(app: Ariadne, group: Group, para: WildcardMatch):
+async def dd_monitor(app: Ariadne, group: Group, para: MatchResult):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
     if (name := para.result.asDisplay().strip()) not in dd_data:
         await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
@@ -105,7 +105,7 @@ async def dd_monitor(app: Ariadne, group: Group, para: WildcardMatch):
         [FullMatch("视频").space(SpacePolicy.FORCE), WildcardMatch() @ "para"]
     )]
 ))
-async def dd_video(app: Ariadne, group: Group, para: WildcardMatch):
+async def dd_video(app: Ariadne, group: Group, para: MatchResult):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
     name = para.result.asDisplay().strip()
     if name not in dd_data:

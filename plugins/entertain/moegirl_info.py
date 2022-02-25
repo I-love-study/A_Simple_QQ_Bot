@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, ParamMatch
+from graia.ariadne.message.parser.twilight import Twilight, MatchResult
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -20,7 +20,7 @@ channel.author("I_love_study")
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight.from_command("萌娘百科 {para}")]
 ))
-async def moegirl_search(app: Ariadne, group: Group, para: ParamMatch):
+async def moegirl_search(app: Ariadne, group: Group, para: MatchResult):
     url = "https://zh.moegirl.org.cn/zh-cn/"+ quote(para.result.asDisplay().strip())
     async with async_playwright() as p:
         browser = await p.chromium.launch()

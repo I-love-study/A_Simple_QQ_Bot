@@ -1,13 +1,14 @@
+import aiohttp
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, SpacePolicy
+from graia.ariadne.message.parser.twilight import (FullMatch, MatchResult,
+                                                   SpacePolicy, Twilight,
+                                                   WildcardMatch)
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
-
-import aiohttp
 
 channel = Channel.current()
 
@@ -22,7 +23,7 @@ aiohttp.ClientSession
          WildcardMatch(optional=True) @ "para"]
     )]
 ))
-async def nbnhhsh(app: Ariadne, group: Group, para: WildcardMatch):
+async def nbnhhsh(app: Ariadne, group: Group, para: MatchResult):
     if not para.matched:
         msg = '能不能好好说话'
     else:

@@ -2,7 +2,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, ParamMatch
+from graia.ariadne.message.parser.twilight import Twilight, MatchResult
 from graia.ariadne.model import Group, Member
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -23,7 +23,7 @@ channel.author("I_love_study")
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight.from_command("ph {l} {r}")]
 ))
-async def pornhub(app: Ariadne, group: Group, l: ParamMatch, r: ParamMatch):
+async def pornhub(app: Ariadne, group: Group, l: MatchResult, r: MatchResult):
     pic = make_porn_logo(l.result.asDisplay(), r.result.asDisplay(), 109) # 必须是109(emoji)
     await app.sendGroupMessage(group, MessageChain.create(Image(data_bytes=pic)))
 

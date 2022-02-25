@@ -62,31 +62,31 @@ async def normal_reply(app: Ariadne, group: Group, message: MessageChain, member
 async def reply_setting(app: Ariadne, group: Group, message: MessageChain, member:Member):
     await app.sendGroupMessage(group, MessageChain.create([
         Plain(f'请选择你想操作的类型：\n'), Plain('\n'.join(list(reply_data)))]))
-    get = await inc.wait(GroupMessageInterrupt(group, member))
-    to_dict = get.messageChain.asDisplay()
+    msg = await inc.wait(GroupMessageInterrupt(group, member))
+    to_dict = msg.asDisplay()
     if to_dict not in list(reply_data):
         await app.sendGroupMessage(group, MessageChain.create([Plain('没有找到这个类型，已取消')]))
         return
 
     await app.sendGroupMessage(group, MessageChain.create([
         Plain('请写出添加内容\n格式:[触发词(不能有空格)] [频率(1为默认触发,2即1/2)] [返回词]')]))
-    get = await inc.wait(GroupMessageInterrupt(group, member))
-    if get.messageChain.exclude(Plain,Source).__root__:
+    msg = await inc.wait(GroupMessageInterrupt(group, member))
+    if msg.exclude(Plain,Source).__root__:
         await app.sendGroupMessage(group, MessageChain.create([
             Plain('请不要出现@等非本文，谢谢\n已取消')]))
         return
 
     write_data = dict()
-    data = get.messageChain.asDisplay().split(' ', 2)
+    data = msg.asDisplay().split(' ', 2)
     print(data)
 
     if re.escape(data[0]) != data[0]:
         await app.sendGroupMessage(group, MessageChain.create([
             Plain('检测到正则表达式方法，请问填写的是否是正则表达式？(是/否)')]))
-        get = await inc.wait(GroupMessageInterrupt(group, member))
-        if get.messageChain.asDisplay().strip() == '是':
+        msg = await inc.wait(GroupMessageInterrupt(group, member))
+        if msg.asDisplay().strip() == '是':
             write_data['trigger'] = data[0]
-        if get.messageChain.asDisplay().strip() == '否':
+        if msg.asDisplay().strip() == '否':
             write_data['trigger'] = re.escape(data[0])
     else:
         write_data['trigger'] = data[0]
@@ -111,8 +111,8 @@ async def reply_setting(app: Ariadne, group: Group, message: MessageChain, membe
         Plain(f"\n回复词:{write_data['reply']}"),
         Plain(f'\n回复(是/否)')
         ]))
-    get = await inc.wait(GroupMessageInterrupt(group, member))
-    if get.messageChain.asDisplay() == '是':
+    msg = await inc.wait(GroupMessageInterrupt(group, member))
+    if msg.asDisplay() == '是':
         reply_data[to_dict].append(write_data)
         origin_data.append(write_data)
         async with async_open('data/reply.json', 'w', encoding = 'UTF-8') as f:
@@ -129,8 +129,8 @@ async def reply_setting(app: Ariadne, group: Group, message: MessageChain, membe
 async def reply_delete(app: Ariadne, group: Group, message: MessageChain, member:Member):
     await app.sendGroupMessage(group, MessageChain.create([
         Plain(f'请选择你想操作的类型：\n'), Plain('\n'.join(list(reply_data)))]))
-    get = await inc.wait(GroupMessageInterrupt(group, member))
-    to_dict = get.messageChain.asDisplay()
+    msg = await inc.wait(GroupMessageInterrupt(group, member))
+    to_dict = msg.asDisplay()
     if to_dict not in list(reply_data):
         await app.sendGroupMessage(group, MessageChain.create([Plain('没有找到这个类型，已取消')]))
         return
@@ -139,8 +139,8 @@ async def reply_delete(app: Ariadne, group: Group, message: MessageChain, member
         Plain('请选择删除的单词\n'),
         Plain('\n'.join(a['trigger'] for a in reply_data[to_dict]))
         ]))
-    get = await inc.wait(GroupMessageInterrupt(group, member))
-    delete_word = get.messageChain.asDisplay()
+    msg = await inc.wait(GroupMessageInterrupt(group, member))
+    delete_word = msg.asDisplay()
     for a in reply_data[to_dict]:
         if a['trigger'] == delete_word:
             reply_data[to_dict].remove(a)
