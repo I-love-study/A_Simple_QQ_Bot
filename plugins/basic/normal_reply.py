@@ -30,17 +30,15 @@ channel = Channel.current()
 inc = InterruptControl(saya.broadcast)
 ultra_admin = saya.access('all_setting')['ultra_administration']
 
-def GroupMessageInterrupt(special_group = None, special_member = None):
-    sp_group = special_group.id if isinstance(special_group, Group) else special_group
-    sp_member = special_member.id if isinstance(special_member, Member) else special_member
-    @Waiter.create_using_function([GroupMessage])
-    async def GroupMessageWaiter(event: GroupMessage):
-        if special_group and event.sender.group.id != sp_group:
-            raise ExecutionStop()
-        if special_member and event.sender.id != sp_member:
-            raise ExecutionStop()
-        return event
-    return GroupMessageWaiter
+class GroupMessageInterrupt(Waiter.create([GroupMessage])):
+
+    def __init__(self, group: Union[Group, int], member: Union[Member, int]):
+        self.group = group if isinstance(group, int) else group.id
+        self.member = member if isinstance(member, int) else member.id
+
+    async def detected_event(self, group: Group, member: Member, message: MessageChain):
+        if self.group == group.id and self.member == member.id:
+            return message
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage], priority=8))
 async def normal_reply(app: Ariadne, group: Group, message: MessageChain, member:Member):

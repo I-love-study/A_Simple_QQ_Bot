@@ -41,8 +41,7 @@ channel = Channel.current()
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage], decorators=[admin_check()],
     inline_dispatchers=[Twilight(
-        [FullMatch("设置查看")],
-        {"custom_group": WildcardMatch(optional=True)}
+        [FullMatch("设置查看"), WildcardMatch(optional=True) @ "custom_group"]
     )]
 ))
 async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group: WildcardMatch):
@@ -85,7 +84,7 @@ async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage], priority=4,
     inline_dispatchers=[Twilight(
-        [FullMatch("setting")], {"command": WildcardMatch(optional=True)}
+        [FullMatch("setting"), WildcardMatch(optional=True) @ "command"]
     )]
 ))
 async def setting(app: Ariadne, group: Group, member:Member, command: WildcardMatch):

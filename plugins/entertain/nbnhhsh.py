@@ -18,8 +18,8 @@ aiohttp.ClientSession
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [FullMatch("nbnhhsh", space=SpacePolicy.FORCE)],
-        {"para": WildcardMatch(optional=True)}
+        [FullMatch("nbnhhsh").space(SpacePolicy.FORCE),
+         WildcardMatch(optional=True) @ "para"]
     )]
 ))
 async def nbnhhsh(app: Ariadne, group: Group, para: WildcardMatch):

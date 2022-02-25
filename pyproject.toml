@@ -23,6 +23,7 @@ regex = ">=2021.11.10"
 graia-broadcast = ">=0.14.5"
 aiohttp = {version = ">=3.7.4.post0", extras = ["speedups"]}
 playwright = ">=1.17.2"
+aiofile = "^3.7.4"
 
 [tool.poetry.dev-dependencies]
 

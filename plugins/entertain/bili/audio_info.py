@@ -26,7 +26,7 @@ channel.author("I_love_study")
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [RegexMatch("AU|au")], {"para": WildcardMatch()}
+        [RegexMatch("AU|au"), WildcardMatch() @ "para"]
     )]
 ))
 async def audio_info(app: Ariadne, group: Group, para: WildcardMatch):

@@ -20,8 +20,8 @@ channel.author("I_love_study")
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [FullMatch("bangumi", space=SpacePolicy.FORCE)],
-        {"para": WildcardMatch()}
+        [FullMatch("bangumi").space(SpacePolicy.FORCE),
+         WildcardMatch() @ "para"]
     )]
 ))
 async def anime(app: Ariadne, group: Group, para: WildcardMatch):

@@ -22,8 +22,8 @@ channel.author("I_love_study")
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [FullMatch("百科", space=SpacePolicy.FORCE)],
-        {"para": WildcardMatch()}
+        [FullMatch("百科").space(SpacePolicy.FORCE),
+         WildcardMatch() @ "para"]
     )]
 ))
 async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
@@ -68,7 +68,7 @@ async def bdbk(app: Ariadne, group: Group, para: WildcardMatch):
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("热点")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight([FullMatch("热点"),WildcardMatch() @ "para"])]
 ))
 async def bdrd(app: Ariadne, group: Group, para: WildcardMatch):
     url = "https://top.baidu.com/board?tab=realtime"

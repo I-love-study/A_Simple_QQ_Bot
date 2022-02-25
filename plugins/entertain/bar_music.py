@@ -18,8 +18,8 @@ channel.author("I_love_study")
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [FullMatch("bar_music", space=SpacePolicy.FORCE)],
-        {"para": WildcardMatch()}
+        [FullMatch("bar_music").space(SpacePolicy.FORCE),
+         WildcardMatch() @ "para"]
     )]
 ))
 async def bar_music(app: Ariadne, group: Group, para: WildcardMatch):

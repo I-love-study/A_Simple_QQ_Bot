@@ -69,7 +69,7 @@ def make_petpet(file, squish=0):
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("摸头")], {"para": WildcardMatch()})]
+    inline_dispatchers=[Twilight([FullMatch("摸头"), WildcardMatch() @ "para"])]
 ))
 async def petpet(app: Ariadne, group: Group, member: Member, para: WildcardMatch):
     user = para.result.getFirst(At).target if para.matched and para.result.has(At) else member.id

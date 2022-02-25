@@ -23,8 +23,8 @@ channel.author("I_love_study")
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [FullMatch("anime")],
-        {"para": WildcardMatch(optional=True)}
+        [FullMatch("anime"),
+         WildcardMatch(optional=True) @ "para"]
     )]
 ))
 async def anime(app: Ariadne, group: Group, para: WildcardMatch):

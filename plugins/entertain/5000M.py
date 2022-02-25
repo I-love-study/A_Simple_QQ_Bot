@@ -12,7 +12,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from io import BytesIO
 from math import radians, tan
 
-import numpy as np
+import numpy as np 
 from PIL import Image as IMG
 from PIL import ImageDraw, ImageFont
 
@@ -25,8 +25,8 @@ channel.author("I_love_study")
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [RegexMatch("5000[mM]", space=SpacePolicy.FORCE)],
-        {"para": WildcardMatch()}
+        [RegexMatch("5000[mM]").space(SpacePolicy.FORCE),
+         WildcardMatch() @ "para"]
     )]
 ))
 async def give5000M(app: Ariadne, group: Group, para: WildcardMatch):

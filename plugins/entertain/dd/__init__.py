@@ -31,7 +31,8 @@ channel.author("I_love_study")
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [FullMatch("直播", space=SpacePolicy.FORCE)], {"para": WildcardMatch()})]
+        [FullMatch("直播").space(SpacePolicy.FORCE), WildcardMatch() @ "para"]
+    )]
 ))
 async def dd_watch(app: Ariadne, group: Group, para: WildcardMatch):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
@@ -61,7 +62,7 @@ async def dd_watch(app: Ariadne, group: Group, para: WildcardMatch):
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [FullMatch("监控室", space=SpacePolicy.FORCE)], {"para": WildcardMatch()}
+        [FullMatch("监控室").space(SpacePolicy.FORCE), WildcardMatch() @ "para"]
     )]
 ))
 async def dd_monitor(app: Ariadne, group: Group, para: WildcardMatch):
@@ -101,7 +102,7 @@ async def dd_monitor(app: Ariadne, group: Group, para: WildcardMatch):
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [FullMatch("视频", space=SpacePolicy.FORCE)], {"para": WildcardMatch()}
+        [FullMatch("视频").space(SpacePolicy.FORCE), WildcardMatch() @ "para"]
     )]
 ))
 async def dd_video(app: Ariadne, group: Group, para: WildcardMatch):
