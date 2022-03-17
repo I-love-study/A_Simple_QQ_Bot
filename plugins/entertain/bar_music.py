@@ -36,6 +36,6 @@ async def bar_music(app: Ariadne, group: Group, para: MatchResult):
     except Exception:
         await app.sendGroupMessage(group, MessageChain.create('不知道为什么，但是我就是放不了'))
         return
-    music_b = await silkcoder.encode(download, rate=80000, ss=0, t=60)
+    music_b = await silkcoder.async_encode(download, rate=80000, ss=0, t=60)
     await app.sendGroupMessage(group, MessageChain.create(Voice(data_bytes=music_b)))
 
