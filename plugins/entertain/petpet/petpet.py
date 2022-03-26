@@ -1,16 +1,19 @@
+import asyncio
+from io import BytesIO
+from pathlib import Path
+
+import aiohttp
+import imageio
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardMatch, MatchResult
+from graia.ariadne.message.parser.twilight import (FullMatch, MatchResult,
+                                                   Twilight, WildcardMatch)
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
-
 from PIL import Image as IMG
-import aiohttp
-from pathlib import Path
-from io import BytesIO
 
 channel = Channel.current()
 
@@ -60,11 +63,7 @@ def make_petpet(file, squish=0):
         gif_frame.paste(reprofile, (spec[0], spec[1]))
         gif_frame.paste(hand, (0, int(squish * squish_translation_factor[i])), hand)
         gifs.append(gif_frame)
-    gifs[0].save(
-        ret := BytesIO(),
-        format='gif',
-        save_all=True, append_images=gifs,
-        duration=0.05, transparency=0)
+    imageio.mimsave(ret := BytesIO(), gifs, format="gif", fps=25, subrectangles=True)
     return ret.getvalue()
 
 @channel.use(ListenerSchema(
@@ -76,5 +75,5 @@ async def petpet(app: Ariadne, group: Group, member: Member, para: MatchResult):
     profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"
     async with aiohttp.request("GET", profile_url) as r:
         profile = BytesIO(await r.read())
-    gif = make_petpet(profile)
+    gif = await asyncio.to_thread(make_petpet(profile))
     await app.sendGroupMessage(group, MessageChain.create([Image(data_bytes=gif)]))

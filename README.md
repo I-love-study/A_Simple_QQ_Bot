@@ -46,10 +46,16 @@ load_modules_folder: #需要导入的文件夹
 
 ### [petpet表情包P图](plugins/entertain/petpet)
 
-功能介绍：返回一张petpet表情包并将被at者头像P到上面  
-调用指令："摸头" + (任意At) (无先后顺序，如没有at则为发送者自己)  
+功能介绍：返回一张petpet表情包并将被 at 者头像P到上面  
+调用指令："摸头" + (任意At) (无先后顺序，如没有 at 则为发送者自己)  
 ~~抄袭~~借鉴： [SAGIRI-kawaii/sagiri-bot](https://github.com/SAGIRI-kawaii/sagiri-bot)  
-需要第三方模块：pillow
+需要第三方模块：pillow, imageio
+
+### [唐可可膜拜表情包P图](plugins/entertain/ll_worship)
+
+功能介绍：返回一张唐可可膜拜你（头像）的 gif
+调用指令："膜拜" + (任意At) (无先后顺序，如没有at则为发送者自己)  
+需要第三方模块：pillow, imageio
   
 ### [番剧时刻表](plugins/entertain/anime_timesche.py)
 
