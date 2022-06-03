@@ -53,21 +53,23 @@ def next_weekend() -> Optional[date]:
             w = weekend.isoweekday()
             weekend += timedelta(days=1 if w == 6 else 6)
             continue
-        
+
         for _, [f, t] in holiday.items():
             # 这是假期，超越了周末
-            if f < weekend < t:
-                weekend += timedelta(days=1 if w == 6 else 6)
+            if f <= weekend <= t:
+                if t.isoweekday() in [6, 7]:
+                    t = t + timedelta(days=1)
+                weekend = t + timedelta(days=6 - t.isoweekday())
                 continue
         break
-    
+
     return weekend
 
 
 def in_holiday() -> bool:
     now = date.today()
     for _, [f, t] in holiday.items():
-        if f < now < t:
+        if f <= now <= t:
             return True
     return False
 
