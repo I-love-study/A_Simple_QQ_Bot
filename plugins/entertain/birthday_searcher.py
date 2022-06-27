@@ -35,7 +35,7 @@ async def today_birthday(app: Ariadne, group: Group):
             async with session.get(url, headers=headers) as r:
                 html = etree.HTML(await r.text())
         except aiohttp.client_exceptions.ClientConnectorError:
-            await app.sendGroupMessage(group, MessageChain.create("对不起，现在萌娘炸了，所以您的请求我无法回复"))
+            await app.send_group_message(group, MessageChain("对不起，现在萌娘炸了，所以您的请求我无法回复"))
             return
     
     figures = html.xpath('//div[@id="mw-pages"]//a/text()')
@@ -44,7 +44,7 @@ async def today_birthday(app: Ariadne, group: Group):
     img = IMG.new("RGB", tuple(map(lambda x: x+20, font.getsize_multiline(text))), "#FFFFFF")
     ImageDraw.Draw(img).text((10,10), text, fill = "#000000", font=font)
     img.save(b := BytesIO(), format="jpeg")
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain("以下为今天生日的虚拟人物哦"),
         Image(data_bytes=b.getvalue())
     ]))

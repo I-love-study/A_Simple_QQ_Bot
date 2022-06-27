@@ -31,12 +31,12 @@ async def anime(app: Ariadne, group: Group, para: MatchResult):
                   "AppleWebKit/537.36 (KHTML, like Gecko) "\
                   "Chrome/84.0.4147.135 Safari/537.36"}
     url = 'https://api.bgm.tv/search/subject/{}?type=2&responseGroup=Large&max_results=1'.format(
-        quote(para.result.asDisplay().strip()))
+        quote(para.result.display.strip()))
     async with aiohttp.request("GET", url, headers = bangumi_headers) as r:
         data = await r.json()
 
     if "code" in data.keys() and data["code"] == 404:
-        await app.sendGroupMessage(group, MessageChain.create('sorry,搜索不到相关信息'))
+        await app.send_group_message(group, MessageChain('sorry,搜索不到相关信息'))
         return
 
     detail_url = f'https://api.bgm.tv/subject/{data["list"][0]["id"]}?responseGroup=medium'
@@ -44,7 +44,7 @@ async def anime(app: Ariadne, group: Group, para: MatchResult):
         data = await r.json()
     async with aiohttp.request("GET", data["images"]["large"]) as r:
         img = await r.read()
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Image(data_bytes=img),
         Plain(text=f"名字:{data['name_cn']}({data['name']})\n"),
         Plain(text=f"简介:{data['summary']}\n"),

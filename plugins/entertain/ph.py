@@ -24,8 +24,8 @@ channel.author("I_love_study")
     inline_dispatchers=[Twilight.from_command("ph {l} {r}")]
 ))
 async def pornhub(app: Ariadne, group: Group, l: MatchResult, r: MatchResult):
-    pic = make_porn_logo(l.result.asDisplay(), r.result.asDisplay(), 109) # 必须是109(emoji)
-    await app.sendGroupMessage(group, MessageChain.create(Image(data_bytes=pic)))
+    pic = make_porn_logo(l.result.display, r.result.display, 109) # 必须是109(emoji)
+    await app.send_group_message(group, MessageChain(Image(data_bytes=pic)))
 
 def make_porn_logo(left: str, right: str,font_size: int):
     gap = int(font_size/4)

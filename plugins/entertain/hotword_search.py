@@ -18,11 +18,11 @@ channel.author("I_love_study")
 async def hotword(app: Ariadne, group: Group, message: MessageChain = DetectSuffix("是什么梗")):
     url = "https://api.jikipedia.com/go/search_definitions"
     headers = {"Client": "web", "Content-Type": "application/json;charset=UTF-8"}
-    payload = {"phrase": message.asDisplay(), "page": 1}
+    payload = {"phrase": message.display, "page": 1}
     async with aiohttp.request("POST", url, headers=headers, json=payload) as r:
         result = (await r.json())["data"][0]
 
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain(text=f"{result['term']['title']}\n\n"),
         Plain(text=f"标签：{' '.join(tag['name'] for tag in result['tags'])}\n"),
         Plain(text="释义：\n" + result['plaintext'])

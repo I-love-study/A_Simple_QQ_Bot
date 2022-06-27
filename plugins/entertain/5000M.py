@@ -30,13 +30,13 @@ channel.author("I_love_study")
     )]
 ))
 async def give5000M(app: Ariadne, group: Group, para: MatchResult):
-    print(para.result.asDisplay())
-    if len(tag:=shlex.split(para.result.asDisplay())) == 2:
+    print(para.result.display)
+    if len(tag:=shlex.split(para.result.display)) == 2:
         genImage(*tag).save(pic := BytesIO(), format='PNG')
         msg = Image(data_bytes=pic.getvalue())
     else:
         msg = Plain('消息有误，请重试')
-    await app.sendGroupMessage(group, MessageChain.create(msg))
+    await app.send_group_message(group, MessageChain(msg))
 
 _round = lambda f, r=ROUND_HALF_UP: int(Decimal(str(f)).quantize(Decimal("0"), rounding=r))
 rgb = lambda r, g, b: (r, g, b)

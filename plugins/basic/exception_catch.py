@@ -38,7 +38,7 @@ async def exception_catch(app: Ariadne, event):
     if isinstance(event.event, ExceptionThrowed):
         return
     else:
-        await app.sendGroupMessage(
+        await app.send_group_message(
             saya.access('all_setting')['admin_group'],
-            MessageChain.create(Image(data_bytes=make_pic(event)))
+            MessageChain(Image(data_bytes=make_pic(event)))
         )

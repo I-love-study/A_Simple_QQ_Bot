@@ -52,9 +52,9 @@ async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group
     x.align["Plugin name"] = "l"
     x.sortby = "Plugin name"
     try:
-        g = group.id if not custom_group.matched else int(custom_group.result.asDisplay().strip())
+        g = group.id if not custom_group.matched else int(custom_group.result.display.strip())
     except ValueError:
-        await app.sendGroupMessage(group, MessageChain.create(
+        await app.send_group_message(group, MessageChain(
             Plain("参数错误，请检查你所填写的参数")
         ))
         return
@@ -77,7 +77,7 @@ async def setting_watch(app: Ariadne, group: Group, member: Member, custom_group
         i.save(b := BytesIO(), format="JPEG")
         return b.getvalue()
 
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Image(data_bytes=await asyncio.to_thread(makepic))
     ]))
 
@@ -124,7 +124,7 @@ async def setting(app: Ariadne, group: Group, member:Member, command: MatchResul
     plugin_setting.set_defaults(command_type='plugin')
 
     try:
-        args = parser.parse_args(command.result.asDisplay() if command.matched else "")
+        args = parser.parse_args(command.result.display if command.matched else "")
     except ParserExit as e:
         ttf = ImageFont.truetype('src/font/SourceHanSans-Medium.otf', 60)
         word = std_output.getvalue()
@@ -132,7 +132,7 @@ async def setting(app: Ariadne, group: Group, member:Member, command: MatchResul
         draw = ImageDraw.Draw(back)
         draw.multiline_text((0,0), word, font=ttf)
         back.save(b := BytesIO(), format='JPEG')
-        await app.sendGroupMessage(group, MessageChain.create([
+        await app.send_group_message(group, MessageChain([
             At(member.id), Plain(' ERROR:' if e.status else ' Help:'),
             Image(data_bytes=b.getvalue())
             ]))
@@ -170,7 +170,7 @@ async def setting(app: Ariadne, group: Group, member:Member, command: MatchResul
             if args.add_black.has(At):
                 ab_list = [a.target for a in args.add_black.get(At)]
             else:
-                li = regex.split('[ ,，]', args.add_black.asDisplay().strip())
+                li = regex.split('[ ,，]', args.add_black.display.strip())
                 ab_list = [int(li) for a in li if li.isdigit()]
             if len(groups) > 1:
                 msg.append('Error：黑名单单次只允许设置一个组的')
@@ -187,7 +187,7 @@ async def setting(app: Ariadne, group: Group, member:Member, command: MatchResul
             if args.add_black.has(At):
                 ab_list = [a.target for a in args.add_black.get(At)]
             else:
-                li = regex.split('[ ,，]', args.add_black.asDisplay().strip())
+                li = regex.split('[ ,，]', args.add_black.display.strip())
                 ab_list = [int(li) for a in li if li.isdigit()]
             if len(groups) > 1:
                 msg.append('Error：黑名单单次只允许设置一个组的')
@@ -252,4 +252,4 @@ async def setting(app: Ariadne, group: Group, member:Member, command: MatchResul
                 msg.append(f"Error：找不到您所说的插件,或者该群没有添加设置")
 
     if msg:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('\n'.join(msg))]))
+        await app.send_group_message(group, MessageChain([Plain('\n'.join(msg))]))

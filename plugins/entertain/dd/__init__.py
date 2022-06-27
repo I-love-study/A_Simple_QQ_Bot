@@ -36,9 +36,9 @@ channel.author("I_love_study")
 ))
 async def dd_watch(app: Ariadne, group: Group, para: MatchResult):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    name = para.result.asDisplay().strip()
+    name = para.result.display.strip()
     if name not in dd_data:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
+        await app.send_group_message(group, MessageChain([Plain('未发现你要D的组织')]))
         return
     status_api = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id="
     conn = aiohttp.TCPConnector(limit = 5)#防爆毙
@@ -56,8 +56,8 @@ async def dd_watch(app: Ariadne, group: Group, para: MatchResult):
                 Plain(f"\n开播时间："),
                 Plain(f"\n{time.strftime('%Y.%m.%d %H:%M:%S',time.gmtime(start_time))}"),
                 ])
-    mes = MessageChain.create([Plain('正在直播的有:'),*send] if send else [Plain(f'没有{name}成员直播')])
-    await app.sendGroupMessage(group, mes)
+    mes = MessageChain([Plain('正在直播的有:'),*send] if send else [Plain(f'没有{name}成员直播')])
+    await app.send_group_message(group, mes)
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
@@ -67,8 +67,8 @@ async def dd_watch(app: Ariadne, group: Group, para: MatchResult):
 ))
 async def dd_monitor(app: Ariadne, group: Group, para: MatchResult):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    if (name := para.result.asDisplay().strip()) not in dd_data:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
+    if (name := para.result.display.strip()) not in dd_data:
+        await app.send_group_message(group, MessageChain([Plain('未发现你要D的组织')]))
         return
     status_api = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id="
     conn = aiohttp.TCPConnector(limit = 5)#防爆毙
@@ -80,7 +80,7 @@ async def dd_monitor(app: Ariadne, group: Group, para: MatchResult):
         if tasks:
             pics_data = await asyncio.gather(*tasks)
         else:
-            await app.sendGroupMessage(group, MessageChain.create([Plain(f'没有{name}成员直播')]))
+            await app.send_group_message(group, MessageChain([Plain(f'没有{name}成员直播')]))
             return
 
     frame = int(math.ceil(len(pics_data)**0.5))
@@ -96,7 +96,7 @@ async def dd_monitor(app: Ariadne, group: Group, para: MatchResult):
         else:
             break
     final_back.save(out := BytesIO(), format='JPEG', quality = 80)
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Image(data_bytes=out.getvalue())]))
 
 @channel.use(ListenerSchema(
@@ -107,9 +107,9 @@ async def dd_monitor(app: Ariadne, group: Group, para: MatchResult):
 ))
 async def dd_video(app: Ariadne, group: Group, para: MatchResult):
     dd_data = yaml.safe_load((Path(__file__).parent/'dd_info.yml').read_text(encoding = 'UTF-8'))
-    name = para.result.asDisplay().strip()
+    name = para.result.display.strip()
     if name not in dd_data:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('未发现你要D的组织')]))
+        await app.send_group_message(group, MessageChain([Plain('未发现你要D的组织')]))
         return
     conn = aiohttp.TCPConnector(limit = 5)#防爆毙
     async with aiohttp.ClientSession(connector = conn) as session:
@@ -126,9 +126,9 @@ async def dd_video(app: Ariadne, group: Group, para: MatchResult):
                          Plain(f"\nhttps://www.bilibili.com/video/av{video['aid']}"),
                          Plain(f"\n发布时间:{play_time}\n")
                         ])
-        await app.sendGroupMessage(group, MessageChain.create(send))
+        await app.send_group_message(group, MessageChain(send))
     else:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('好家伙,他们一个也没更新')]))
+        await app.send_group_message(group, MessageChain([Plain('好家伙,他们一个也没更新')]))
 
 async def get_videos(session, mid, last_time):
     n = 1

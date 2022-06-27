@@ -18,7 +18,7 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
 async def video_info(app: Ariadne, group: Group, message: MessageChain):
-    msg_str = message.asDisplay().strip()
+    msg_str = message.display.strip()
     if msg_str.startswith(('av','AV','Av')):
         try:
             id_type = 'aid'
@@ -37,7 +37,7 @@ async def video_info(app: Ariadne, group: Group, message: MessageChain):
     data = get['data']
     during = '{}分{}秒'.format(data['duration'] // 60 ,data['duration'] % 60)
 
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Image(url=get['data']['pic']),
         Plain(f"\n标题:{data['title']}"),
         Plain(f"\nUp主:{data['owner']['name']}"),

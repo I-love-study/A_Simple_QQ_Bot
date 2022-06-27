@@ -25,17 +25,16 @@ channel.author("I_love_study")
     )]
 ))
 async def bar_music(app: Ariadne, group: Group, para: MatchResult):
-    song_name = para.result.asDisplay().strip() 
+    song_name = para.result.display.strip() 
     if song_name == '':
-        await app.sendGroupMessage(group, MessageChain.create('点啥歌？'))
+        await app.send_group_message(group, MessageChain('点啥歌？'))
         return
     
     search_data = await Netease.search(song_name)
     try:
         download = await Netease.download_song(search_data[0]['id'])
     except Exception:
-        await app.sendGroupMessage(group, MessageChain.create('不知道为什么，但是我就是放不了'))
+        await app.send_group_message(group, MessageChain('不知道为什么，但是我就是放不了'))
         return
     music_b = await silkcoder.async_encode(download, rate=80000, ss=0, t=60)
-    await app.sendGroupMessage(group, MessageChain.create(Voice(data_bytes=music_b)))
-
+    await app.send_group_message(group, MessageChain(Voice(data_bytes=music_b)))

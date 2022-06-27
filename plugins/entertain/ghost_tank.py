@@ -30,9 +30,9 @@ async def ghost_tank(app: Ariadne, group: Group, member: Member, para: MatchResu
     if len(p := para.result.get(Image)) == 2:
         pics = asyncio.gather(*[i.get_bytes() for i in p])
         gray_car(*pics).save(b := BytesIO(), format='PNG')
-        await app.sendGroupMessage(group, MessageChain.create(Image(data_bytes=b.getvalue())))
+        await app.send_group_message(group, MessageChain(Image(data_bytes=b.getvalue())))
     else:
-        await app.sendGroupMessage(group, MessageChain.create('你这图,数量不对啊kora'))
+        await app.send_group_message(group, MessageChain('你这图,数量不对啊kora'))
 
 # 感谢老司机
 # https://zhuanlan.zhihu.com/p/31164700

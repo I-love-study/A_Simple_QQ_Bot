@@ -37,4 +37,3 @@ class ModuleSetting(Base):
 engine = create_engine('sqlite:///data/setting.db?check_same_thread=False')
 Base.metadata.create_all(engine, checkfirst=True)
 session = sessionmaker(bind=engine)()
-

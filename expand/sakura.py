@@ -47,7 +47,7 @@ async def user_at_message(member: Union[int, Member], pic: bool = True, r_type =
         bg.save(b, format='PNG')
         mes.insert(0,Image.fromUnsafeBytes(b.getvalue()))
     if r_type is MessageChain:
-        return MessageChain.create(mes)
+        return MessageChain(mes)
     elif r_type is list:
         return mes
 

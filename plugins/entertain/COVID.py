@@ -35,7 +35,7 @@ plt.rcParams['mathtext.fontset'] = 'cm'  # 'cm' (Computer Modern)
 ))
 async def COVID(app: Ariadne, group: Group):
     top_10, img = await get_COVID_19()
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain("新型冠状病毒前10:\n"+"\n".join(top_10)),
         Image(data_bytes=img)
     ]))

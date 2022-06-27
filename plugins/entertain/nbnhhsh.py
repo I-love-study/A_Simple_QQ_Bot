@@ -27,7 +27,7 @@ async def nbnhhsh(app: Ariadne, group: Group, para: MatchResult):
     if not para.matched:
         msg = '能不能好好说话'
     else:
-        js = {'text': para.result.asDisplay().strip()}
+        js = {'text': para.result.display.strip()}
         url = "https://lab.magiconch.com/api/nbnhhsh/guess"
         async with aiohttp.request("POST", url, json=js) as r:
             ret = (await r.json())[0]
@@ -38,4 +38,4 @@ async def nbnhhsh(app: Ariadne, group: Group, para: MatchResult):
         else:
             msg = f"没找到{ret['name']}的全称"
     
-    await app.sendGroupMessage(group, MessageChain.create(msg))
+    await app.send_group_message(group, MessageChain(msg))

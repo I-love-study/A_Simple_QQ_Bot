@@ -71,9 +71,9 @@ def make_petpet(file, squish=0):
     inline_dispatchers=[Twilight([FullMatch("摸头"), WildcardMatch() @ "para"])]
 ))
 async def petpet(app: Ariadne, group: Group, member: Member, para: MatchResult):
-    user = para.result.getFirst(At).target if para.matched and para.result.has(At) else member.id
+    user = para.result.get_first(At).target if para.matched and para.result.has(At) else member.id
     profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"
     async with aiohttp.request("GET", profile_url) as r:
         profile = BytesIO(await r.read())
     gif = await asyncio.to_thread(make_petpet(profile))
-    await app.sendGroupMessage(group, MessageChain.create([Image(data_bytes=gif)]))
+    await app.send_group_message(group, MessageChain([Image(data_bytes=gif)]))

@@ -31,12 +31,12 @@ channel.author("I_love_study")
     )]
 ))
 async def bdbk(app: Ariadne, group: Group, para: MatchResult):
-    tags = para.result.asDisplay().strip().split(' ',1)
+    tags = para.result.display.strip().split(' ',1)
 
     bdurl = f'https://baike.baidu.com/item/{urllib.parse.quote(tags[0])}?force=1'
     async with aiohttp.request("GET", bdurl, headers = headers, allow_redirects = True) as r:
         if str(r.url).startswith('https://baike.baidu.com/error.html'):
-            await app.sendGroupMessage(group, MessageChain.create('sorry,百科并没有相关信息'))
+            await app.send_group_message(group, MessageChain('sorry,百科并没有相关信息'))
             return
         reponse = await r.text()
 
@@ -44,7 +44,7 @@ async def bdbk(app: Ariadne, group: Group, para: MatchResult):
     if page.xpath('//div[@class="lemmaWgt-subLemmaListTitle"]//text()') != []:
         if len(tags) == 1:
             catalog = page.xpath('//div[@class="para" and @label-module="para"]/a/text()')
-            await app.sendGroupMessage(group, MessageChain.create([
+            await app.send_group_message(group, MessageChain([
                 Plain(f"请输入代号\ne.g:百科 {tags[0]} 1\n\n"),
                 Plain('\n'.join(f"{n}.{w.replace(f'{tags[0]}：','')}" for n, w in enumerate(catalog, 1)))
                 ]))
@@ -68,7 +68,7 @@ async def bdbk(app: Ariadne, group: Group, para: MatchResult):
     if (img_url := page.xpath('//div[@class="summary-pic"]/a/img/@src')):
         msg.append(Image(url=img_url[0]))
 
-    await app.sendGroupMessage(group, MessageChain.create(msg))
+    await app.send_group_message(group, MessageChain(msg))
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
@@ -82,9 +82,9 @@ async def bdrd(app: Ariadne, group: Group, para: MatchResult):
     get = json.loads(
         html.xpath("//div[@theme='realtime']/comment()")[0].text[7:]
     )['data']['cards'][0]['content']
-    if para.matched and (t := para.result.asDisplay().strip()).isdigit():
+    if para.matched and (t := para.result.display.strip()).isdigit():
         get = get[int(t) - 1]
-        await app.sendGroupMessage(group, MessageChain.create(f"{get['word']}:\n{get['desc']}"))
+        await app.send_group_message(group, MessageChain(f"{get['word']}:\n{get['desc']}"))
     else:
         get_list = [f"{n}.{p['word']}" for n, p in enumerate(get, 1)]
-        await app.sendGroupMessage(group, MessageChain.create('\n'.join(get_list[0:10])))
+        await app.send_group_message(group, MessageChain('\n'.join(get_list[0:10])))

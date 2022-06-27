@@ -42,13 +42,13 @@ class GroupMessageInterrupt(Waiter.create([GroupMessage])):
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage], priority=8))
 async def normal_reply(app: Ariadne, group: Group, message: MessageChain, member:Member):
-    k = message.asDisplay()
+    k = message.display
     for single in origin_data:
         #本来想用regex库,但实地测试发现re更快点(在fullmatch中)
         if re.fullmatch(single['trigger'], k):
             if 'chance' in single and random.randint(1, single['chance']) != 1:
                 return
-            await app.sendGroupMessage(group, MessageChain.create([
+            await app.send_group_message(group, MessageChain([
                 At(target = member.id),
                 Plain(text = "\n" + single['reply'])
                 ]))
@@ -60,33 +60,33 @@ async def normal_reply(app: Ariadne, group: Group, message: MessageChain, member
     inline_dispatchers=[Twilight([FullMatch("回复设置")])]
 ))
 async def reply_setting(app: Ariadne, group: Group, message: MessageChain, member:Member):
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain(f'请选择你想操作的类型：\n'), Plain('\n'.join(list(reply_data)))]))
     msg = await inc.wait(GroupMessageInterrupt(group, member))
-    to_dict = msg.asDisplay()
+    to_dict = msg.display
     if to_dict not in list(reply_data):
-        await app.sendGroupMessage(group, MessageChain.create([Plain('没有找到这个类型，已取消')]))
+        await app.send_group_message(group, MessageChain([Plain('没有找到这个类型，已取消')]))
         return
 
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain('请写出添加内容\n格式:[触发词(不能有空格)] [频率(1为默认触发,2即1/2)] [返回词]')]))
     msg = await inc.wait(GroupMessageInterrupt(group, member))
     if msg.exclude(Plain,Source).__root__:
-        await app.sendGroupMessage(group, MessageChain.create([
+        await app.send_group_message(group, MessageChain([
             Plain('请不要出现@等非本文，谢谢\n已取消')]))
         return
 
     write_data = dict()
-    data = msg.asDisplay().split(' ', 2)
+    data = msg.display.split(' ', 2)
     print(data)
 
     if re.escape(data[0]) != data[0]:
-        await app.sendGroupMessage(group, MessageChain.create([
+        await app.send_group_message(group, MessageChain([
             Plain('检测到正则表达式方法，请问填写的是否是正则表达式？(是/否)')]))
         msg = await inc.wait(GroupMessageInterrupt(group, member))
-        if msg.asDisplay().strip() == '是':
+        if msg.display.strip() == '是':
             write_data['trigger'] = data[0]
-        if msg.asDisplay().strip() == '否':
+        if msg.display.strip() == '否':
             write_data['trigger'] = re.escape(data[0])
     else:
         write_data['trigger'] = data[0]
@@ -95,7 +95,7 @@ async def reply_setting(app: Ariadne, group: Group, message: MessageChain, membe
         if int(data[1]) != 1:
             write_data['chance'] = int(data[1])
     else:
-        await app.sendGroupMessage(group, MessageChain.create([
+        await app.send_group_message(group, MessageChain([
             Plain('无法识别触发频率，已取消')]))
         return
 
@@ -103,7 +103,7 @@ async def reply_setting(app: Ariadne, group: Group, message: MessageChain, membe
     print(write_data)
     write_data['reply'] = data[2]
 
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain('请最后核实添加关键词'),
         Plain(f'\n存入区域:{to_dict}'),
         Plain(f"\n触发词:{write_data['trigger']}"),
@@ -112,14 +112,14 @@ async def reply_setting(app: Ariadne, group: Group, message: MessageChain, membe
         Plain(f'\n回复(是/否)')
         ]))
     msg = await inc.wait(GroupMessageInterrupt(group, member))
-    if msg.asDisplay() == '是':
+    if msg.display == '是':
         reply_data[to_dict].append(write_data)
         origin_data.append(write_data)
         async with async_open('data/reply.json', 'w', encoding = 'UTF-8') as f:
             await f.write(json.dumps(reply_data, ensure_ascii = False, indent = 2))
-        await app.sendGroupMessage(group, MessageChain.create([Plain('操作完成')]))
+        await app.send_group_message(group, MessageChain([Plain('操作完成')]))
     else:
-        await app.sendGroupMessage(group, MessageChain.create([Plain('操作已取消')]))
+        await app.send_group_message(group, MessageChain([Plain('操作已取消')]))
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
@@ -127,29 +127,29 @@ async def reply_setting(app: Ariadne, group: Group, message: MessageChain, membe
     inline_dispatchers=[Twilight([FullMatch("回复删除")])]
 ))
 async def reply_delete(app: Ariadne, group: Group, message: MessageChain, member:Member):
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain(f'请选择你想操作的类型：\n'), Plain('\n'.join(list(reply_data)))]))
     msg = await inc.wait(GroupMessageInterrupt(group, member))
-    to_dict = msg.asDisplay()
+    to_dict = msg.display
     if to_dict not in list(reply_data):
-        await app.sendGroupMessage(group, MessageChain.create([Plain('没有找到这个类型，已取消')]))
+        await app.send_group_message(group, MessageChain([Plain('没有找到这个类型，已取消')]))
         return
 
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain('请选择删除的单词\n'),
         Plain('\n'.join(a['trigger'] for a in reply_data[to_dict]))
         ]))
     msg = await inc.wait(GroupMessageInterrupt(group, member))
-    delete_word = msg.asDisplay()
+    delete_word = msg.display
     for a in reply_data[to_dict]:
         if a['trigger'] == delete_word:
             reply_data[to_dict].remove(a)
             origin_data.remove(a)
             async with async_open('data/reply.json', 'w', encoding = 'UTF-8') as f:
                 await f.write(json.dumps(reply_data, ensure_ascii = False, indent = 2))
-            await app.sendGroupMessage(group, MessageChain.create([Plain('操作成功')]))
+            await app.send_group_message(group, MessageChain([Plain('操作成功')]))
             return
-    await app.sendGroupMessage(group, MessageChain.create([Plain('操作失败')]))
+    await app.send_group_message(group, MessageChain([Plain('操作失败')]))
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
@@ -162,4 +162,4 @@ async def reply_look(app: Ariadne, group: Group, message: MessageChain, member:M
         text += f'\n{a}:\n'
         text += '\n'.join(b['trigger'] for b in reply_data[a])
         text += '\n'
-    await app.sendGroupMessage(group,MessageChain.create([Plain(text)]))
+    await app.send_group_message(group,MessageChain([Plain(text)]))

@@ -76,7 +76,7 @@ def in_holiday() -> bool:
 @channel.use(SchedulerSchema(timers.crontabify("0 8 * * * *")))
 async def moyu(app: Ariadne):
     today = date.today()
-    msg = MessageChain.create(
+    msg = MessageChain(
         f"早上好，摸鱼人！今天是{today.strftime('%Y年%m月%d日')}")
 
     # 看看今天是不是周末
@@ -112,4 +112,4 @@ async def moyu(app: Ariadne):
         g.remove(806724946)
 
     for sg in g:
-        await app.sendGroupMessage(sg, msg)
+        await app.send_group_message(sg, msg)

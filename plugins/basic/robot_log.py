@@ -90,7 +90,7 @@ async def send_log(app: Ariadne):
     read = BytesIO()
     plt.savefig(read, format = "png", bbox_inches='tight')
     plt.clf()
-    await app.sendGroupMessage(admin_group, MessageChain.create([
+    await app.send_group_message(admin_group, MessageChain([
         Plain('今日机器人接收信息：'),
         Image(data_bytes=read.getvalue()),
         ]))
@@ -99,5 +99,5 @@ async def send_log(app: Ariadne):
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
 async def log(app: Ariadne, group: Group, message: MessageChain, member:Member):
-    data = [datetime.datetime.now(), group.id, member.id, message.asPersistentString(binary=False)]
+    data = [datetime.datetime.now(), group.id, member.id, message.as_persistent_string(binary=False)]
     cur.execute("INSERT into log values (?, ?, ?, ?)", data)

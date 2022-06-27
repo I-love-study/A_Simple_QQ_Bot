@@ -30,10 +30,10 @@ channel.author("I_love_study")
     )]
 ))
 async def audio_info(app: Ariadne, group: Group, para: MatchResult):
-    if not (t := para.result.asDisplay()).isdigit():
+    if not (t := para.result.display).isdigit():
         return
 
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Image(data_bytes=await audio_make(int(t)))
     ]))
 

@@ -9,10 +9,10 @@ channel = Channel.current()
 
 @channel.use(ConsoleSchema([Twilight.from_command("group_chat {g} {msg}")]))
 async def console_chat(app: Ariadne, g: MatchResult, msg: MatchResult):
-    group_id = g.result.asDisplay()
+    group_id = g.result.display
     if not group_id.isdigit(): 
         logger.error(f"{group_id} is not a group id")
     elif not msg.result: 
         logger.error("您消息呢？")
     else:
-        await app.sendGroupMessage(int(group_id), msg.result)
+        await app.send_group_message(int(group_id), msg.result)

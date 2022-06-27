@@ -21,7 +21,7 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
 async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: Member):
-    if '小老弟' in message.asDisplay() and message.has(At):
+    if '小老弟' in message.display and message.has(At):
         xiaolaodi = IMG.open(Path(__file__).parent/'小老弟.png')
         if At(app.account) in message:
             text = '我哪里像小老弟了,小老弟'
@@ -49,6 +49,6 @@ async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: M
         xiaolaodi.paste(user_pic,user_box)
         xiaolaodi.paste(to_pic,to_box)
         xiaolaodi.save(out := BytesIO(), format='PNG')
-        await app.sendGroupMessage(group, MessageChain.create([
+        await app.send_group_message(group, MessageChain([
             Plain(text=text),
             Image(data_bytes=out.getvalue())]))

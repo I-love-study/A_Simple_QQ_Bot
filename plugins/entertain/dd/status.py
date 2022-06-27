@@ -17,18 +17,18 @@ data_path = Path(__file__).parent / 'dd_info.yml'
     inline_dispatchers=[Kanata([FullMatch('组织添加 '), RequireParam('tag')])]
     ))
 async def dd_group_add(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
-    name = tag.asDisplay().strip()
+    name = tag.display.strip()
     dd_data = yaml.safe_load(data_path.read_text(encoding = 'UTF-8'))
     dd_data.append(name)
     data_path.write_text(yaml.safe_dump(dd_data), encoding = 'UTF-8')
-    await app.sendGroupMessage(group, MessageChain.create([Plain(f'增加团队"{name}"成功')]))
+    await app.send_group_message(group, MessageChain([Plain(f'增加团队"{name}"成功')]))
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Kanata([FullMatch('组织删除 '), RequireParam('tag')])]
     ))
 async def dd_group_del(app: GraiaMiraiApplication, group: Group, member: Member, tag: MessageChain):
-    name = tag.asDisplay().strip()
+    name = tag.display.strip()
     dd_data = yaml.safe_load(data_path.read_text(encoding = 'UTF-8'))
     if name in dd_data:
         del dd_data[name]
@@ -36,7 +36,7 @@ async def dd_group_del(app: GraiaMiraiApplication, group: Group, member: Member,
     else:
         msg = 'DD数据中找不到这个组织'
     data_path.write_text(yaml.safe_dump(dd_data), encoding = 'UTF-8')
-    await app.sendGroupMessage(group, MessageChain.create([Plain(msg)]))
+    await app.send_group_message(group, MessageChain([Plain(msg)]))
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],

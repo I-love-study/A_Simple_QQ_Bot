@@ -34,8 +34,8 @@ async def learn(app: Ariadne, group: Group):
         'http://oss.fk.houdask.com/sys/v/20/01/d15be5ac6027461794e399402bb8ddec.rar',
         'http://oss.fk.houdask.com/sys/v/20/01/0dd665e49ec24999b772475fbf78a65a.zip']
     if random.randint(0,4) != 0:
-        await app.sendGroupMessage(group, MessageChain.create(
+        await app.send_group_message(group, MessageChain(
             "你好惨哦\n没有学习资料看\n可惜了你没抽到呢"))
     else:
-        await app.sendGroupMessage(group, MessageChain.create(
+        await app.send_group_message(group, MessageChain(
             "学❤习❤资❤料\n请❤勿❤外❤传\n" + random.choice(learning_urls)))

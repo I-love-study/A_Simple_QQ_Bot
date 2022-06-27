@@ -38,10 +38,10 @@ class GroupMessageInterrupt(Waiter.create([GroupMessage])):
     inline_dispatchers=[Twilight([FullMatch("重启")])]
     ))
 async def restart(app: Ariadne, group: Group, message: MessageChain, member:Member):
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Plain(f'确定要重启机器人吗(是/否)')]))
     get = await inc.wait(GroupMessageInterrupt(group, member))
-    if get.messageChain.asDisplay() == '是':
+    if get.message_chain.display == '是':
         os.system('git pull')
         Path('restart_time').write_text(f'{group.id}|{time.time()}', encoding='UTF-8')
         if platform.system() == 'Windows':
@@ -49,7 +49,7 @@ async def restart(app: Ariadne, group: Group, message: MessageChain, member:Memb
             await app.shutdown()
             exit()
         elif platform.system() == 'Linux':
-            await app.sendGroupMessage(group, MessageChain.create([
+            await app.send_group_message(group, MessageChain([
                 Plain(f'警告，现阶段Linux需要手动启动')]))
             await app.shutdown()
             exit()
@@ -59,7 +59,7 @@ async def check_restart(app: Ariadne):
     restart_path = Path('restart_time')
     if restart_path.is_file():
         g, t = restart_path.read_text(encoding='UTF-8').split('|')
-        await app.sendGroupMessage(int(g), MessageChain.create([
+        await app.send_group_message(int(g), MessageChain([
             Plain('重启成功,共耗时{:0.2f}秒'.format(time.time()-float(t)))
             ]))
         restart_path.unlink()

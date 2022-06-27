@@ -30,12 +30,12 @@ channel.author("I_love_study")
 async def anime(app: Ariadne, group: Group, para: MatchResult):
     today = int(datetime.fromisoformat(date.today().isoformat()).timestamp())
     date2ts = {'yesterday': today-86400, '':today, 'tomorrow': today+86400}
-    d = para.result.asDisplay().strip() if para.matched else ''
+    d = para.result.display.strip() if para.matched else ''
 
     if d in date2ts:
         date_ts = date2ts[d]
     else:
-        await app.sendGroupMessage(group, MessageChain.create('未知时间'))
+        await app.send_group_message(group, MessageChain('未知时间'))
         return
 
     async with aiohttp.ClientSession() as session:
@@ -65,5 +65,5 @@ async def anime(app: Ariadne, group: Group, para: MatchResult):
                 single['pub_index'] if 'pub_index' in single else single['delay_index']+single['delay_reason'], 
                 font=ttf, fill=(0,160,216))
         final_back.save(out := BytesIO(), format='JPEG')
-    await app.sendGroupMessage(group, MessageChain.create([
+    await app.send_group_message(group, MessageChain([
         Image(data_bytes=out.getvalue())]))

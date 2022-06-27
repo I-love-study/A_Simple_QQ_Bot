@@ -26,7 +26,7 @@ async def ll_worship(app: Ariadne, group: Group, member: Member, message: Messag
     else:
         avatar = await member.getAvatar()
     
-    await app.sendGroupMessage(group, MessageChain.create(
+    await app.send_group_message(group, MessageChain(
         f"{member.name} 膜拜了你！" if message[At] else "你膜拜了自己！",
         Image(data_bytes=await asyncio.to_thread(create_meme, avatar))
     ))
