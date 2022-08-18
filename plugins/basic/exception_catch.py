@@ -14,23 +14,22 @@ from expand.text import analyse_font
 saya = Saya.current()
 channel = Channel.current()
 
-font = ImageFont.truetype('src/font/SourceHanSansHW-Regular.otf', 20)
+font = ImageFont.truetype('src/font/SourceHanSansHW-Regular.otf', 40)
 
 async def make_pic(event):
     with StringIO() as fp:
         traceback.print_tb(event.exception.__traceback__, file=fp)
         tb = fp.getvalue()
-
     output = (
         f"异常事件：\n{event.event}\n"
         f"异常内容：\n{event.exception}\n"
         f"异常回滚：\n{tb}"
     )
 
-    new_output = analyse_font(2000, output, font)
-    img = IMG.new("RGB", font.getsize(new_output), (0, 0, 0))
-    ImageDraw.Draw(img).text((0, 0), new_output, fill="black", font=font)
-    img.save(out := BytesIO(), format="JPEG")
+    new_output = analyse_font(3200, output, font)
+    img = IMG.new("RGB", font.getsize_multiline(new_output), (0, 0, 0))
+    ImageDraw.Draw(img).text((0, 0), new_output, fill="white", font=font)
+    img.save(out := BytesIO(), format="PNG")
     return out.getvalue()
 
 

@@ -38,14 +38,24 @@ cur.execute('''CREATE TABLE IF NOT EXISTS log (
 saya = Saya.current()
 channel = Channel.current()
 admin_group = saya.access('all_setting')['admin_group']
+lock = asyncio.Lock()
 
 @channel.use(SchedulerSchema(timers.crontabify('0 0 * * *')))
-async def update_log(app: Ariadne):
+async def update_log():
     global log_name, conn, cur
     await asyncio.sleep(3)
-    d = get_month()
-    if d != log_name:
-        conn_, cur_ = conn, cur
+    
+    if (d := get_month()) == log_name:
+        return
+    
+    async with lock:
+        sql_cmd = "SELECT * from log where SENDTIME >= datetime('Now', 'localtime', 'start of day')"
+        cur.executemany("INSERT into log values (?, ?, ?, ?)", cur.execute(sql_cmd))
+        cur.execute("DELETE from log where SENDTIME >= datetime('Now', 'localtime', 'start of day')")
+        cur.close()
+        conn.close()
+
+        log_name = d
         conn = sqlite3.connect(f'data/chat_log/{log_name}.db', isolation_level = None)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE IF NOT EXISTS log (
@@ -54,13 +64,6 @@ async def update_log(app: Ariadne):
             MEMBERID   INTEGER     NOT NULL,
             MESSAGE       TEXT     NOT NULL
             );''')
-    
-        sql_cmd = "SELECT * from log where SENDTIME >= datetime('Now', 'localtime', 'start of day')"
-        for data in cur_.execute(sql_cmd):
-            cur.execute("INSERT into log values (?, ?, ?, ?)", data)
-        cur_.execute("DELETE from log where SENDTIME >= datetime('Now', 'localtime', 'start of day')")
-        cur_.close()
-        conn_.close()
 
 
 @channel.use(SchedulerSchema(timers.crontabify('1 0 * * *')))

@@ -2,12 +2,14 @@ import asyncio
 import pkgutil
 from pathlib import Path
 
+from creart import create
 import yaml
 from graia.ariadne.app import Ariadne
 from graia.ariadne.console import Console
 from graia.ariadne.console.saya import ConsoleBehaviour
 from graia.ariadne.connection.config import config, HttpClientConfig, WebsocketClientConfig
 from graia.broadcast import Broadcast
+from graia.broadcast.builtin.event import ExceptionThrowed
 from graia.saya import Saya
 from graia.saya.builtins.broadcast import BroadcastBehaviour
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -18,18 +20,11 @@ from graia.scheduler.saya.schema import SchedulerSchema
 import decorators
 from orm import *
 
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
-bcc = Broadcast(loop=loop)
-con = Console(broadcast=bcc, prompt="SimpleBot> ")
-sche = GraiaScheduler(loop=loop, broadcast=bcc)
-Ariadne.config(loop=loop, broadcast=bcc)
-saya = Saya(bcc)
-saya.install_behaviours(
-    BroadcastBehaviour(bcc),
-    ConsoleBehaviour(con),
-    GraiaSchedulerBehaviour(sche),
-)
+bcc = create(Broadcast)
+sche = create(GraiaScheduler)
+con = Console(broadcast=bcc, prompt="D_admin> ")
+saya = create(Saya)
+saya.install_behaviours(ConsoleBehaviour(con))
 
 with open('configs.yml', encoding='UTF-8') as f:
     configs = yaml.safe_load(f)
@@ -68,6 +63,8 @@ with saya.module_context():
             config_check_deco_sche = decorators.ConfigCheck(dir_name, module.name, True)
             for cube in saya.require(f"{dir_name}.{module.name}").content:
                 if isinstance(cube.metaclass, ListenerSchema):
+                    if ExceptionThrowed in cube.metaclass.listening_events:
+                        continue
                     cube_deco = cube.metaclass.decorators
                     deco = next((a for a in cube_deco if isinstance(a, decorators.SettingCheck)), None)
                     if deco is None or not deco.out_control:
