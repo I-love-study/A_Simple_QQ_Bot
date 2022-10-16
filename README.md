@@ -142,6 +142,12 @@ load_modules_folder: #需要导入的文件夹
 调用办法：无被动调用方法，只能每天早上8点
 需要的第三方模块：无
 
+### [梗百科](plugins/entertain/hotword_search.py)
+
+功能介绍：获取梗相对应的知识
+调用方法：`xxx是什么梗`
+需要的第三方模块：aiohttp, yarl, lxml
+
 ### [后台聊天](plugins/basic/console_chat.py)
 
 功能介绍：通过 Console 模块在后台聊天  
