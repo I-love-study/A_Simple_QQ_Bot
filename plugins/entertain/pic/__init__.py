@@ -1,7 +1,7 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
+from graia.ariadne.message.element import At, Image
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -49,6 +49,4 @@ async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: M
         xiaolaodi.paste(user_pic,user_box)
         xiaolaodi.paste(to_pic,to_box)
         xiaolaodi.save(out := BytesIO(), format='PNG')
-        await app.send_group_message(group, MessageChain([
-            Plain(text=text),
-            Image(data_bytes=out.getvalue())]))
+        await app.send_group_message(group, MessageChain(text, Image(data_bytes=out.getvalue())))

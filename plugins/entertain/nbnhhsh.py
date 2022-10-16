@@ -2,7 +2,6 @@ import aiohttp
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
 from graia.ariadne.message.parser.twilight import (FullMatch, MatchResult,
                                                    SpacePolicy, Twilight,
                                                    WildcardMatch)
@@ -27,7 +26,7 @@ async def nbnhhsh(app: Ariadne, group: Group, para: MatchResult):
     if not para.matched:
         msg = '能不能好好说话'
     else:
-        js = {'text': para.result.display.strip()}
+        js = {'text': str(para.result).strip()}
         url = "https://lab.magiconch.com/api/nbnhhsh/guess"
         async with aiohttp.request("POST", url, json=js) as r:
             ret = (await r.json())[0]

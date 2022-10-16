@@ -1,6 +1,5 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
 from graia.saya import Saya, Channel
 from graia.scheduler import timers
 from graia.scheduler.saya.schema import SchedulerSchema
@@ -68,10 +67,7 @@ def next_weekend() -> Optional[date]:
 
 def in_holiday() -> bool:
     now = date.today()
-    for _, [f, t] in holiday.items():
-        if f <= now <= t:
-            return True
-    return False
+    return any(f <= now <= t for _, [f, t] in holiday.items())
 
 @channel.use(SchedulerSchema(timers.crontabify("0 8 * * * *")))
 async def moyu(app: Ariadne):
@@ -88,21 +84,20 @@ async def moyu(app: Ariadne):
             msg += "而且还是放假期间哦"
         else:
             msg += "好好休息一下吧"
-    else:
-        if in_holiday():
-            msg += "现在是假期哦~"
-    
+    elif in_holiday():
+        msg += "现在是假期哦~"
+
     end_holiday = list(dropwhile(lambda x: x[1][1] < today, holiday.items()))
     if weekend := next_weekend():
         i = len(list(takewhile(lambda x: x[1][1] < today, end_holiday)))
         end_holiday.insert(i, ("周末", [weekend]))
-    
+
     msg += "\n\n"
 
     for n, (day, f) in enumerate(end_holiday, 1):
         if n > 3:
             break
-        
+
         f = f[0]
         msg += f"距离{day}还有{(f - today).days}天\n"
 

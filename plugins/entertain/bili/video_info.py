@@ -1,7 +1,7 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
+from graia.ariadne.message.element import Image
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -37,12 +37,12 @@ async def video_info(app: Ariadne, group: Group, message: MessageChain):
     data = get['data']
     during = '{}分{}秒'.format(data['duration'] // 60 ,data['duration'] % 60)
 
-    await app.send_group_message(group, MessageChain([
+    await app.send_group_message(group, MessageChain(
         Image(url=get['data']['pic']),
-        Plain(f"\n标题:{data['title']}"),
-        Plain(f"\nUp主:{data['owner']['name']}"),
-        Plain(f"\n视频时长:{during}"),
-        Plain(f"\nav号:{data['aid']}"),
-        Plain(f"\nbv号:{data['bvid']}"),
-        Plain(f"\n链接:https://bilibili.com/video/{data['bvid']}")
-        ]))
+        f"\n标题:{data['title']}"
+        f"\nUp主:{data['owner']['name']}"
+        f"\n视频时长:{during}"
+        f"\nav号:{data['aid']}"
+        f"\nbv号:{data['bvid']}"
+        f"\n链接:https://bilibili.com/video/{data['bvid']}"
+        ))

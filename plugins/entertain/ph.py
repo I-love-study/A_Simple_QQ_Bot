@@ -1,16 +1,15 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
+from graia.ariadne.message.element import Image
 from graia.ariadne.message.parser.twilight import Twilight, MatchResult
-from graia.ariadne.model import Group, Member
-from graia.saya import Saya, Channel
+from graia.ariadne.model import Group
+from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
 from expand.text import EmojiWriter
 from PIL import Image as IMG, ImageDraw
 from io import BytesIO
-import shlex
 
 words2img = EmojiWriter().text2pic
 channel = Channel.current()
@@ -24,11 +23,11 @@ channel.author("I_love_study")
     inline_dispatchers=[Twilight.from_command("ph {l} {r}")]
 ))
 async def pornhub(app: Ariadne, group: Group, l: MatchResult, r: MatchResult):
-    pic = make_porn_logo(l.result.display, r.result.display, 109) # 必须是109(emoji)
+    pic = make_porn_logo(str(l.result), str(r.result), 109) # 必须是109(emoji)
     await app.send_group_message(group, MessageChain(Image(data_bytes=pic)))
 
 def make_porn_logo(left: str, right: str,font_size: int):
-    gap = int(font_size/4)
+    gap = font_size // 4
     right_font = words2img(right, (0,0,0), font_size)
     r_wide,r_height = right_font.size
     yellow_color = '#F7971D'

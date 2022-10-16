@@ -1,7 +1,7 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
+from graia.ariadne.message.element import Image
 from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, MatchResult
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
@@ -12,6 +12,7 @@ from pathlib import Path
 
 from PIL import Image as IMG, ImageDraw, ImageFont
 import qrcode
+import qrcode.constants
 import aiohttp
 
 from expand.text import analyse_font
@@ -30,7 +31,7 @@ channel.author("I_love_study")
     )]
 ))
 async def audio_info(app: Ariadne, group: Group, para: MatchResult):
-    if not (t := para.result.display).isdigit():
+    if not (t := str(para.result)).isdigit():
         return
 
     await app.send_group_message(group, MessageChain([
@@ -60,17 +61,17 @@ async def audio_make(auid):
     src_path = Path(__file__).parent / "src"
 
     qrimg = qr.make_image(fill_color=(229,229,229),back_color=(26,26,26))
-    qrimg = qrimg.resize((165, 162), IMG.ANTIALIAS)
+    qrimg = qrimg.resize((165, 162), IMG.ANTIALIAS) #type: ignore
     bottom = IMG.open(src_path/"black_down.png")
     qrimg_mask = IMG.new("1", (165, 162))
-    ImageDraw.Draw(qrimg_mask).rounded_rectangle([0, 0, 165, 162], 6, 1)
+    ImageDraw.Draw(qrimg_mask).rounded_rectangle((0, 0, 165, 162), 6, 1)
     bottom.paste(qrimg, (654, 75), mask=qrimg_mask)
     
     async with aiohttp.request("GET", data["cover"]) as r:
         cover = await r.read()
     music_img = IMG.open(BytesIO(cover)).resize((280, 280))
     music_mask = IMG.new("1", (280, 280))
-    ImageDraw.Draw(music_mask).rounded_rectangle([0, 0, 280, 280], 10, 1)
+    ImageDraw.Draw(music_mask).rounded_rectangle((0, 0, 280, 280), 10, 1)
     music_bg = IMG.open(src_path/"audio_pic_bg.png").convert("RGBA")
     music_bg.paste(music_img, (8, 30), mask=music_mask)
     

@@ -1,8 +1,9 @@
+from typing import Annotated
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
-from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, SpacePolicy, MatchResult
+from graia.ariadne.message.element import Image
+from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, SpacePolicy, ResultValue
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
@@ -25,17 +26,18 @@ channel.author("I_love_study")
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
     inline_dispatchers=[Twilight(
-        [RegexMatch("5000[mM]").space(SpacePolicy.FORCE),
-         WildcardMatch() @ "para"]
+        RegexMatch("5000[mM]").space(SpacePolicy.FORCE),
+         WildcardMatch() @ "para"
     )]
 ))
-async def give5000M(app: Ariadne, group: Group, para: MatchResult):
-    print(para.result.display)
-    if len(tag:=shlex.split(para.result.display)) == 2:
-        genImage(*tag).save(pic := BytesIO(), format='PNG')
+async def give5000M(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
+    if not para:
+        return await app.send_group_message(group, MessageChain(str(channel._description)))
+    if len(tag:=shlex.split(str(para))) == 2:
+        genImage(*tag).save(pic := BytesIO(), format='PNG') # type: ignore
         msg = Image(data_bytes=pic.getvalue())
     else:
-        msg = Plain('消息有误，请重试')
+        msg = '消息有误，请重试'
     await app.send_group_message(group, MessageChain(msg))
 
 _round = lambda f, r=ROUND_HALF_UP: int(Decimal(str(f)).quantize(Decimal("0"), rounding=r))
@@ -47,6 +49,7 @@ def getTextWidth(text, font, width=100, height=500, recursive=False):
     draw = ImageDraw.Draw(img)
     draw.text((0, 0), text, font=font, fill=255)
     box = img.getbbox()
+    assert box
     if box[2] < width-step or (recursive and box[2] == width-step):
         return box[2]
     else:
@@ -129,7 +132,7 @@ def genBaseImage(width=1500, height=150):
         "strokeWhite": IMG.new("RGBA", (width, height), rgb(221, 221, 221)),  # Width: 8
         "baseStrokeWhite": IMG.new("RGBA", (width, height), rgb(255, 255, 255))  # Width: 8
     }
-    for k in result.keys():
+    for k in result:
         result[k].putalpha(255)
     return result
 
@@ -183,7 +186,7 @@ def genImage(word_a="5000兆円", word_b="欲しい!", default_width=1500, heigh
             "red",
         ]
     ]
-    for pos, stroke, color in zip(*upper_data):
+    for pos, stroke, color in zip(*upper_data): #type: ignore
         mask_img_upper = IMG.new("L", (upper_width, _round(height/2)), 0)
         ImageDraw.Draw(mask_img_upper).text(
             (pos[0]+10, pos[1]), word_a,
@@ -207,7 +210,7 @@ def genImage(word_a="5000兆円", word_b="欲しい!", default_width=1500, heigh
             "silver2"
         ]
     ]
-    for pos, stroke, color in zip(*downer_data):
+    for pos, stroke, color in zip(*downer_data): #type: ignore
         mask_img_downer = IMG.new("L", (downer_width+leftmargin, _round(height/2)), 0)
         ImageDraw.Draw(mask_img_downer).text(
             (pos[0]+leftmargin, pos[1]), word_b,
