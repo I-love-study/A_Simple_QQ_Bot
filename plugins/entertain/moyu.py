@@ -69,7 +69,7 @@ def in_holiday() -> bool:
     now = date.today()
     return any(f <= now <= t for _, [f, t] in holiday.items())
 
-@channel.use(SchedulerSchema(timers.crontabify("0 8 * * * *")))
+@channel.use(SchedulerSchema(timers.crontabify("0 8 * * *")))
 async def moyu(app: Ariadne):
     today = date.today()
     msg = MessageChain(
