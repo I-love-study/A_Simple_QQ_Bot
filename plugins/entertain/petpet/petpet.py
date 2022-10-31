@@ -64,7 +64,7 @@ def make_petpet(file, squish=0):
         gif_frame.paste(reprofile, (spec[0], spec[1]))
         gif_frame.paste(hand, (0, int(squish * squish_translation_factor[i])), hand)
         gifs.append(gif_frame)
-    return iio.imwrite("<bytes>", gifs, extension=".gif", fps=25, subrectangles=True)
+    return iio.imwrite("<bytes>", gifs, extension=".gif", loop=0, during=40, subrectangles=True)
 
 @channel.use(ListenerSchema(
     listening_events=[GroupMessage],
@@ -72,7 +72,7 @@ def make_petpet(file, squish=0):
 ))
 async def petpet(app: Ariadne, group: Group, member: Member, para: Annotated[MessageChain, ResultValue()]):
     user = para.get_first(At).target if para.has(At) else member.id
-    profile_url = f"http://q1.qlogo.cn/g?b=qq&nk={user}&s=640"
+    profile_url = f"https://q2.qlogo.cn/headimg_dl?dst_uin={user}&spec=640"
     async with aiohttp.request("GET", profile_url) as r:
         profile = BytesIO(await r.read())
     gif = await asyncio.to_thread(make_petpet, profile)

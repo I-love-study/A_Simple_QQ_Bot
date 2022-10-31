@@ -6,18 +6,20 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Source, Forward, ForwardNode
 from graia.ariadne.message.parser.twilight import Twilight, FullMatch, ElementMatch, ElementResult
 from graia.ariadne.model import Group, Member
-from graia.saya import Channel
+from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 from .saucenao import SauceNao
 from .exception import SauceNaoApiError
 
+saya = Saya.current()
 channel = Channel.current()
 
 channel.name("Saucenao")
 channel.description("以图搜图")
 channel.author("I_love_study")
 
-apikey = "a866874836003a8f43ad58ce499776d8d326169a"
+apikey = saya.access('all_setting')['plugins']['saucenao_key']
+have_apikey = bool(apikey)
 
 # 其他代码来源于 saucenao-api
 
@@ -34,6 +36,9 @@ async def saucenao(app: Ariadne, group: Group, member: Member, img: ElementResul
     assert isinstance(img.result, Image)
     image_url = img.result.url
     assert image_url
+
+    if not have_apikey:
+        return await app.send_group_message(group, MessageChain("apikey没有设置，请设置后再使用"))
 
     await app.send_group_message(group, MessageChain("正在搜索，请稍后"), quote=source.id)
     async with SauceNao(apikey, numres=3) as snao:

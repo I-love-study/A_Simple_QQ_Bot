@@ -11,12 +11,10 @@ from PIL import Image as IMG
 from pathlib import Path
 from io import BytesIO
 
-__plugin_name__ = '咋回事小老弟'
-__plugin_usage__ = '@一个人说一句小老弟试试'
 channel = Channel.current()
 
 channel.name("LittleBro")
-channel.description("发送'5000m [词] [词]'制作'5000兆円欲しい'图片")
+channel.description("@一个人说一句小老弟试试")
 channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
@@ -32,8 +30,8 @@ async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: M
             to = message.get(At)[0].target
             user = member.id
 
-        user_pic = f'http://q1.qlogo.cn/g?b=qq&nk={user}&s=640'
-        to_pic = f'http://q1.qlogo.cn/g?b=qq&nk={to}&s=640'
+        user_pic = f"https://q2.qlogo.cn/headimg_dl?dst_uin={user}&spec=640"
+        to_pic = f"https://q2.qlogo.cn/headimg_dl?dst_uin={to}&spec=640"
         async with aiohttp.request("GET",user_pic) as r:
             user_pic = await r.read()
             user_pic = IMG.open(BytesIO(user_pic))

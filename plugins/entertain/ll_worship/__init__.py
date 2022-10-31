@@ -21,7 +21,7 @@ channel = Channel.current()
 @channel.use(ListenerSchema([GroupMessage], decorators=[ContainKeyword("膜拜")]))
 async def ll_worship(app: Ariadne, group: Group, member: Member, message: MessageChain):
     if message[At]:
-        url = f"https://q.qlogo.cn/g?b=qq&nk={message[At][0].target}&s=640"
+        url = f"https://q2.qlogo.cn/headimg_dl?dst_uin=={message[At][0].target}&spec=640"
         async with aiohttp.request("GET", url) as r:
             avatar = await r.read()
     else:
@@ -52,10 +52,10 @@ def create_meme(avatar_bytes: bytes):
         [(50, -33), (275, 36), (275, 298), (50, 283)]
         #[(150, -100), (826, 121), (826, 894), (150, 850)]
     )
-    bg = avatar.transform((640, 320), IMG.PERSPECTIVE, coeffs, IMG.BICUBIC)
+    bg = avatar.transform((640, 320), IMG.Transform.PERSPECTIVE, coeffs, IMG.Resampling.BICUBIC)
     frames = []
     for frame in ImageSequence.Iterator(background):
         n_frame = bg.copy()
         n_frame.paste(frame, (0, 0), frame)
         frames.append(n_frame)
-    return iio.imwrite("<bytes>", frames, extensions=".gif", fps=25, subrectangles=True)
+    return iio.imwrite("<bytes>", frames, extension=".gif", loop=0, duration=50, subrectangles=True)
