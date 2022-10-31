@@ -7,3 +7,6 @@ ultra_administration:
 load_modules_folder:
   - plugins/basic
   - plugins/entertain
+
+plugins:
+  saucenao_key: ""
