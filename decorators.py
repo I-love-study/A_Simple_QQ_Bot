@@ -1,3 +1,4 @@
+from typing import Optional
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.interfaces.decorator import DecoratorInterface
@@ -46,17 +47,16 @@ class SettingCheck(Decorator):
     pre = True
 
     def __init__(self,
-        active_groups:    list = [],
-        negative_groups:  list = [],
-        active_members:   list = [],
-        negative_members: list = [],
-        out_control:      bool = True
-        ):
-        self.active_groups    = active_groups
-        self.negative_groups  = negative_groups
-        self.active_members   = active_members
-        self.negative_members = negative_members
-        self.out_control      = out_control
+                 active_groups: Optional[list] = None,
+                 negative_groups: Optional[list] = None,
+                 active_members: Optional[list] = None,
+                 negative_members: Optional[list] = None,
+                 out_control: bool = True):
+        self.active_groups = active_groups or []
+        self.negative_groups = negative_groups or []
+        self.active_members = active_members or []
+        self.negative_members = negative_members or []
+        self.out_control = out_control or []
 
     async def target(self, interface: DecoratorInterface):
         try:
