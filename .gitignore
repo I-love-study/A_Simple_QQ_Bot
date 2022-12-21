@@ -4,3 +4,4 @@ __pycache__/
 /test.*
 .pdm.toml
 .venv
+*.egg-info
