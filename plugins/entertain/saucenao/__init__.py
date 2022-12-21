@@ -3,13 +3,15 @@ from datetime import datetime
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Image, Source, Forward, ForwardNode
-from graia.ariadne.message.parser.twilight import Twilight, FullMatch, ElementMatch, ElementResult
-from graia.ariadne.model import Group, Member
-from graia.saya import Saya, Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
-from .saucenao import SauceNao
+from graia.ariadne.message.element import Forward, ForwardNode, Image, Source
+from graia.ariadne.message.parser.twilight import (ElementMatch, ElementResult,
+                                                   FullMatch, Twilight)
+from graia.ariadne.model import Group
+from graia.saya import Channel, Saya
+from graiax.shortcut.saya import dispatch, listen
+
 from .exception import SauceNaoApiError
+from .saucenao import SauceNao
 
 saya = Saya.current()
 channel = Channel.current()
@@ -23,16 +25,11 @@ have_apikey = bool(apikey)
 
 # 其他代码来源于 saucenao-api
 
-@channel.use(
-    ListenerSchema(listening_events=[GroupMessage],
-                   inline_dispatchers=[
-                       Twilight([
-                           FullMatch("以图搜番"),
-                           FullMatch("\n", optional=True),
-                           "img" @ ElementMatch(Image, optional=True),
-                       ]),
-                   ]))
-async def saucenao(app: Ariadne, group: Group, member: Member, img: ElementResult, source: Source):
+@listen(GroupMessage)
+@dispatch(
+    Twilight(FullMatch("以图搜番"), FullMatch("\n", optional=True),
+             "img" @ ElementMatch(Image, optional=True)))
+async def saucenao_get(app: Ariadne, group: Group, img: ElementResult, source: Source):
     assert isinstance(img.result, Image)
     image_url = img.result.url
     assert image_url

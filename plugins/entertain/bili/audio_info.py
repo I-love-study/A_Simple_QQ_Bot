@@ -1,22 +1,25 @@
+from io import BytesIO
+from pathlib import Path
+from typing import Annotated
+
+import aiohttp
+import qrcode
+import qrcode.constants
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, MatchResult
-from graia.ariadne.model import Group, Member
+from graia.ariadne.message.parser.twilight import (RegexMatch, ResultValue,
+                                                   Twilight, WildcardMatch)
+from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import dispatch, listen
+from PIL import Image as IMG
+from PIL import ImageDraw, ImageFont
+from qrcode.image.pil import PilImage
 
-from io import BytesIO
-from pathlib import Path
-
-from PIL import Image as IMG, ImageDraw, ImageFont
-import qrcode
-import qrcode.constants
-import aiohttp
-
-from expand.text import analyse_font
 from expand import bilibili
+from expand.text import analyse_font
 
 channel = Channel.current()
 
@@ -24,14 +27,11 @@ channel.name("biliAU号")
 channel.description("发送任意AU号获取信息")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(
-        [RegexMatch("AU|au"), WildcardMatch() @ "para"]
-    )]
-))
-async def audio_info(app: Ariadne, group: Group, para: MatchResult):
-    if not (t := str(para.result)).isdigit():
+
+@listen(GroupMessage)
+@dispatch(Twilight(RegexMatch("AU|au"), WildcardMatch() @ "para"))
+async def audio_info(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
+    if not (t := str(para)).isdigit():
         return
 
     await app.send_group_message(group, MessageChain([
@@ -61,12 +61,13 @@ async def audio_make(auid):
     src_path = Path(__file__).parent / "src"
 
     qrimg = qr.make_image(fill_color=(229,229,229),back_color=(26,26,26))
-    qrimg = qrimg.resize((165, 162), IMG.ANTIALIAS) #type: ignore
+    assert isinstance(qrimg, PilImage)
+    qrimg = qrimg.resize((165, 162), IMG.ANTIALIAS)
     bottom = IMG.open(src_path/"black_down.png")
     qrimg_mask = IMG.new("1", (165, 162))
     ImageDraw.Draw(qrimg_mask).rounded_rectangle((0, 0, 165, 162), 6, 1)
     bottom.paste(qrimg, (654, 75), mask=qrimg_mask)
-    
+
     async with aiohttp.request("GET", data["cover"]) as r:
         cover = await r.read()
     music_img = IMG.open(BytesIO(cover)).resize((280, 280))
@@ -74,7 +75,7 @@ async def audio_make(auid):
     ImageDraw.Draw(music_mask).rounded_rectangle((0, 0, 280, 280), 10, 1)
     music_bg = IMG.open(src_path/"audio_pic_bg.png").convert("RGBA")
     music_bg.paste(music_img, (8, 30), mask=music_mask)
-    
+
     bg = IMG.new("RGBA", (1080, 900), (26, 26, 26))
     bgd = ImageDraw.Draw(bg)
     bg.paste(bottom, (0, 602))
@@ -107,7 +108,7 @@ async def audio_make(auid):
     bgd.text((600, 240), data["uname"], fill=(229, 229, 229), font=font)
 
     icon_font = ImageFont.truetype(r"src/font/bilibili-iconfont.ttf", size=45)
-    bgd.multiline_text((420, 370), "\ue6e3\n\n\ue6e4\n\n\ue6e1", 
+    bgd.multiline_text((420, 370), "\ue6e3\n\n\ue6e4\n\n\ue6e1",
              fill=(229, 229, 229), font=icon_font)
     font = ImageFont.truetype(r"src/font/SourceHanSansHW-Bold.otf", size=34)
 
@@ -117,18 +118,18 @@ async def audio_make(auid):
          f"{analyse_num(data['coin_num'])}\n\n"
          f"{analyse_num(data['statistic']['collect'])}"),
         fill=(229, 229, 229), font=font)
-    
+
     font = ImageFont.truetype(r"src/font/SourceHanSansHW-Bold.otf", size=25)
     ana = analyse_font(400, data['intro'], font)
     if len(a := ana.split("\n")) >= 8:
         ana = "\n".join([*a[:7], "..."])
     bgd.text((600, 350), f"简介\n{ana}",
             fill=(229, 229, 229), font=font)
-    
-    #转换为RGB和降低compress_level都是为了加速导出速度 
+
+    #转换为RGB和降低compress_level都是为了加速导出速度
     bg.convert("RGB").save(b := BytesIO(), format="png", compress_level=1)
     return b.getvalue()
-    
+
 
 def analyse_num(num):
     def strofsize(num, level):

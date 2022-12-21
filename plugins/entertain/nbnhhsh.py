@@ -1,32 +1,29 @@
+from typing import Annotated
+
 import aiohttp
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.parser.twilight import (FullMatch, MatchResult,
-                                                   SpacePolicy, Twilight,
-                                                   WildcardMatch)
-from graia.ariadne.model import Group, Member
+from graia.ariadne.message.parser.twilight import (FullMatch, ResultValue,
+                                                   Twilight, WildcardMatch)
+from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut import dispatch, listen
 
 channel = Channel.current()
 
 channel.name("nbnhhsh")
 channel.description("发送'nbnhhsh [缩写]'返回缩写全程")
 channel.author("I_love_study")
-aiohttp.ClientSession
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(
-        [FullMatch("nbnhhsh").space(SpacePolicy.FORCE),
-         WildcardMatch(optional=True) @ "para"]
-    )]
-))
-async def nbnhhsh(app: Ariadne, group: Group, para: MatchResult):
-    if not para.matched:
+
+
+@listen(GroupMessage)
+@dispatch(Twilight(FullMatch("nbnhhsh"), WildcardMatch() @ "para"))
+async def nbnhhsh(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
+    if not para:
         msg = '能不能好好说话'
     else:
-        js = {'text': str(para.result).strip()}
+        js = {'text': str(para).strip()}
         url = "https://lab.magiconch.com/api/nbnhhsh/guess"
         async with aiohttp.request("POST", url, json=js) as r:
             ret = (await r.json())[0]
@@ -36,5 +33,5 @@ async def nbnhhsh(app: Ariadne, group: Group, para: MatchResult):
             msg = f"缩写{ret['name']}的全称:\n" + '\n'.join(w)
         else:
             msg = f"没找到{ret['name']}的全称"
-    
+
     await app.send_group_message(group, MessageChain(msg))

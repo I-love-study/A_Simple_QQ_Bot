@@ -6,7 +6,7 @@ from graia.ariadne.message.element import Image
 from graia.ariadne.message.parser.twilight import Twilight, ResultValue
 from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, dispatch
 
 from urllib.parse import quote
 import aiohttp
@@ -20,13 +20,14 @@ channel.author("I_love_study")
 
 header = {
     "user-agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.66 Safari/537.36 Edg/103.0.1264.44"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/103.0.5060.66 Safari/537.36 Edg/103.0.1264.44"
 }
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight.from_command("萌娘百科 {para}")]
-))
+
+@listen(GroupMessage)
+@dispatch(Twilight.from_command("萌娘百科 {para}"))
 async def moegirl_search(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
     url = f"https://zh.moegirl.org.cn/zh-cn/{quote(str(para).strip())}"
     async with aiohttp.request("GET", url, headers=header) as r:

@@ -12,13 +12,17 @@ from graia.ariadne.message.element import Image, At
 from graia.ariadne.message.parser.base import ContainKeyword
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, decorate
 from PIL import Image as IMG
 from PIL import ImageSequence
 
 channel = Channel.current()
+channel.name("Worship")
+channel.description("发送膜拜+任意at一个，返回唐可可膜拜你")
+channel.author("I_love_study")
 
-@channel.use(ListenerSchema([GroupMessage], decorators=[ContainKeyword("膜拜")]))
+@listen(GroupMessage)
+@decorate(ContainKeyword("膜拜"))
 async def ll_worship(app: Ariadne, group: Group, member: Member, message: MessageChain):
     if message[At]:
         url = f"https://q2.qlogo.cn/headimg_dl?dst_uin=={message[At][0].target}&spec=640"

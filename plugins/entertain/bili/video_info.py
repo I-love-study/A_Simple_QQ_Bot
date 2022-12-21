@@ -2,9 +2,9 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.model import Group, Member
+from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen
 
 import re
 
@@ -16,7 +16,7 @@ channel.name("AVBVAU")
 channel.description("发送任意av/BV号获取视频信息")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(listening_events=[GroupMessage]))
+@listen(GroupMessage)
 async def video_info(app: Ariadne, group: Group, message: MessageChain):
     msg_str = message.display.strip()
     if msg_str.startswith(('av','AV','Av')):

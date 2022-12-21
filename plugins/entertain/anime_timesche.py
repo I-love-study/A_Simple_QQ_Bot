@@ -8,10 +8,11 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.message.parser.twilight import ResultValue, Twilight, UnionMatch, WildcardMatch
+from graia.ariadne.message.parser.twilight import ResultValue, Twilight
 from graia.ariadne.model import Group
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import dispatch, listen
 from PIL import Image as IMG
 from PIL import ImageDraw, ImageFont
 
@@ -21,13 +22,8 @@ channel.name("AnimeTimeSchedule")
 channel.description("发送anime/anime tomorrow/anime yesterday获取昨/今/明的番剧时刻表")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(
-        UnionMatch("anime", "番剧时刻表"),
-        WildcardMatch() @ "para"
-    )]
-))
+@listen(GroupMessage)
+@dispatch(Twilight.from_command("[anime|番剧时刻表]  {para}"))
 async def anime(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
     today = int(time.mktime(date.today().timetuple()))
     date2ts = {

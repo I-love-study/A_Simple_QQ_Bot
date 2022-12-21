@@ -1,19 +1,20 @@
-from typing import Annotated
-from graia.ariadne.app import Ariadne
-from graia.ariadne.event.message import GroupMessage
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Image
-from graia.ariadne.message.parser.twilight import Twilight, RegexMatch, WildcardMatch, SpacePolicy, ResultValue
-from graia.ariadne.model import Group, Member
-from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
-
 import shlex
 from decimal import ROUND_HALF_UP, Decimal
 from io import BytesIO
 from math import radians, tan
+from typing import Annotated
 
-import numpy as np 
+import numpy as np
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Image
+from graia.ariadne.message.parser.twilight import (RegexMatch, ResultValue,
+                                                   SpacePolicy, Twilight,
+                                                   WildcardMatch)
+from graia.ariadne.model import Group
+from graia.saya import Channel
+from graiax.shortcut.saya import dispatch, listen
 from PIL import Image as IMG
 from PIL import ImageDraw, ImageFont
 
@@ -23,18 +24,14 @@ channel.name("5000M")
 channel.description("发送'5000m [词] [词]'制作'5000兆円欲しい'图片")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(
-        RegexMatch("5000[mM]").space(SpacePolicy.FORCE),
-         WildcardMatch() @ "para"
-    )]
-))
+
+@listen(GroupMessage)
+@dispatch(Twilight(RegexMatch("5000[mM]").space(SpacePolicy.FORCE), WildcardMatch() @ "para"))
 async def give5000M(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
     if not para:
         return await app.send_group_message(group, MessageChain(str(channel._description)))
     if len(tag:=shlex.split(str(para))) == 2:
-        genImage(*tag).save(pic := BytesIO(), format='PNG') # type: ignore
+        genImage(*tag).save(pic := BytesIO(), format='PNG') #type: ignore
         msg = Image(data_bytes=pic.getvalue())
     else:
         msg = '消息有误，请重试'

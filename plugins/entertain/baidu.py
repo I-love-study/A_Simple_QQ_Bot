@@ -12,10 +12,11 @@ from graia.ariadne.message.parser.twilight import (FullMatch, ResultValue,
                                                    WildcardMatch, RegexMatch)
 from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, dispatch
 from lxml import etree
 
-headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
+headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                       'AppleWebKit/537.36 (KHTML, like Gecko) '
                        'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
 
 channel = Channel.current()
@@ -24,13 +25,9 @@ channel.name("BaiduSearch")
 channel.description("发送'百科 [词语]'获取拜读百科词条\n发送热点获取百度热点Top10")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(
-        FullMatch("百科").space(SpacePolicy.FORCE),
-        WildcardMatch() @ "para"
-    )]
-))
+
+@listen(GroupMessage)
+@dispatch(Twilight(FullMatch("百科").space(SpacePolicy.FORCE), WildcardMatch() @ "para"))
 async def bdbk(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
     tags = str(para).strip().split(' ',1)
 
@@ -40,7 +37,7 @@ async def bdbk(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultV
             return await app.send_group_message(group, MessageChain('sorry,百科并没有相关信息'))
         reponse = await r.text()
 
-    page = etree.HTML(reponse) #type: ignore
+    page = etree.HTML(reponse) # type: ignore
     if page.xpath('//div[@class="lemmaWgt-subLemmaListTitle"]//text()') != []:
         if len(tags) == 1:
             catalog = page.xpath('//div[@class="para" and @label-module="para"]/a/text()')
@@ -54,7 +51,7 @@ async def bdbk(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultV
         bdurl = f'https://baike.baidu.com{path}'
         async with aiohttp.request("GET",bdurl,headers = headers) as r:
             reponse = await r.text()
-        page = etree.HTML(reponse) #type: ignore
+        page = etree.HTML(reponse) # type: ignore
 
     for i in page.xpath('//div[@class="lemma-summary"]/div//sup'):
         i.getparent().remove(i)
@@ -69,15 +66,13 @@ async def bdbk(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultV
 
     await app.send_group_message(group, MessageChain(msg))
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("热点"), RegexMatch("[0-9]*") @ "para"])]
-))
+@listen(GroupMessage)
+@dispatch(Twilight(FullMatch("热点"), RegexMatch("[0-9]*") @ "para"))
 async def bdrd(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
     url = "https://top.baidu.com/board?tab=realtime"
     async with aiohttp.request("GET", url, headers=headers) as r:
         reponse = await r.text()
-    html = etree.HTML(reponse) #type: ignore
+    html = etree.HTML(reponse) # type: ignore
     get = json.loads(
         html.xpath("//div[@theme='realtime']/comment()")[0].text[7:]
     )['data']['cards'][0]['content']

@@ -1,10 +1,11 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.parser.twilight import Twilight, RegexMatch
+from graia.ariadne.message.parser.base import MatchRegex
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, decorate
 
 channel = Channel.current()
 
@@ -12,10 +13,8 @@ channel.name("BanMe")
 channel.description("发送'禁言我'禁言(前提是有权限)")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([RegexMatch(".?禁言我.?")])]
-))
+@listen(GroupMessage)
+@decorate(MatchRegex(".?禁言我.?"))
 async def auto_ban(app: Ariadne, group: Group, member: Member):
     try:
         await app.mute_member(group, member, 600)

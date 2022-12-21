@@ -5,7 +5,7 @@ from graia.ariadne.message.element import Image
 from graia.ariadne.message.parser.twilight import Twilight, MatchResult
 from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, dispatch
 
 from expand.text import EmojiWriter
 from PIL import Image as IMG, ImageDraw
@@ -18,12 +18,10 @@ channel.name("PornHubStyleWord")
 channel.description("发送'ph [字] [字]'获取熟悉的ph图标")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight.from_command("ph {l} {r}")]
-))
+@listen(GroupMessage)
+@dispatch(Twilight.from_command("ph {l} {r}"))
 async def pornhub(app: Ariadne, group: Group, l: MatchResult, r: MatchResult):
-    pic = make_porn_logo(str(l), str(r), 109) # 必须是109(emoji)
+    pic = make_porn_logo(str(l.result), str(r.result), 109) # 必须是109(emoji)
     await app.send_group_message(group, MessageChain(Image(data_bytes=pic)))
 
 def make_porn_logo(left: str, right: str,font_size: int):

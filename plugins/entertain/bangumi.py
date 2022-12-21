@@ -1,5 +1,4 @@
 from typing import Annotated
-from urllib.parse import quote
 
 import aiohttp
 from yarl import URL
@@ -9,10 +8,10 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.message.parser.twilight import (FullMatch,
                                                    SpacePolicy, Twilight,
-                                                   RegexMatch, ForceResult, ResultValue)
+                                                   RegexMatch, ResultValue)
 from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, dispatch
 
 channel = Channel.current()
 
@@ -20,13 +19,9 @@ channel.name("BangumiData")
 channel.description("发送'bangumi [番剧]'获取番剧详细信息")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(
-        FullMatch("bangumi").space(SpacePolicy.FORCE),
-        RegexMatch(r".+") @ "para"
-    )]
-))
+
+@listen(GroupMessage)
+@dispatch(Twilight(FullMatch("bangumi").space(SpacePolicy.FORCE), RegexMatch(r".+") @ "para"))
 async def anime(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
     bangumi_headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -45,10 +40,11 @@ async def anime(app: Ariadne, group: Group, para: Annotated[MessageChain, Result
         return
 
     detail_url = f'https://api.bgm.tv/subject/{data["list"][0]["id"]}?responseGroup=medium'
-    async with aiohttp.request("GET", detail_url) as r:
-        data = await r.json()
-    async with aiohttp.request("GET", data["images"]["large"]) as r:
-        img = await r.read()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(detail_url) as r:
+            data = await r.json()
+        async with session.get(data["images"]["large"]) as r:
+            img = await r.read()
     await app.send_group_message(group, MessageChain([
         Image(data_bytes=img),
         f"名字:{data['name_cn']}({data['name']})\n"

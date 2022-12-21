@@ -1,8 +1,7 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.saya import Saya, Channel
-from graia.scheduler import timers
-from graia.scheduler.saya.schema import SchedulerSchema
+from graiax.shortcut.saya import crontab
 
 from typing import Optional
 from datetime import date, timedelta
@@ -10,6 +9,10 @@ from itertools import takewhile, dropwhile
 
 saya = Saya.current()
 channel = Channel.current()
+
+channel.name("moyu")
+channel.description("每天提醒你距离节假日/周末还有多久")
+channel.author("I_love_study")
 
 # 来自《国务院办公厅关于2023年部分节假日安排的通知》
 holiday = {
@@ -68,7 +71,7 @@ def in_holiday() -> bool:
     now = date.today()
     return any(f <= now <= t for _, [f, t] in holiday.items())
 
-@channel.use(SchedulerSchema(timers.crontabify("0 8 * * *")))
+@crontab("0 8 * * *")
 async def moyu(app: Ariadne):
     today = date.today()
     msg = MessageChain(

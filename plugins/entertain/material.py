@@ -4,7 +4,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.parser.base import MatchContent
 from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, decorate
 import random
 
 channel = Channel.current()
@@ -14,10 +14,8 @@ channel.description("发送'learn'获取学❤习❤资❤料")
 channel.author("I_love_study")
 #这些都是厚大法考的学习资料
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    decorators=[MatchContent("learn")]
-    ))
+@listen(GroupMessage)
+@decorate(MatchContent("learn"))
 async def learn(app: Ariadne, group: Group):
     if random.randint(0,4) != 0:
         await app.send_group_message(group, MessageChain(

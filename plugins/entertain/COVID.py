@@ -2,19 +2,16 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.message.parser.twilight import Twilight
+from graia.ariadne.message.parser.base import MatchContent
 from graia.ariadne.model import Group
-from graia.saya import Saya, Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graia.saya import Channel
+from graiax.shortcut.saya import listen, decorate
 
 import aiohttp
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import numpy as np
 from io import BytesIO
-
-__plugin_name__ = '新冠病毒查看'
-__plugin_usage__ = '"COVID-19"'
 
 channel = Channel.current()
 
@@ -24,15 +21,13 @@ channel.author("I_love_study")
 
 font_path = "src/font/SourceHanSans-Medium.otf"  # Your font path goes here
 fm.fontManager.addfont(font_path)
-prop = fm.FontProperties(fname=font_path)
+prop = fm.FontProperties(fname=font_path) # type: ignore
 
 plt.rcParams['font.family'] = prop.get_name()
 plt.rcParams['mathtext.fontset'] = 'cm'  # 'cm' (Computer Modern)
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight.from_command("COVID-19")]
-))
+@listen(GroupMessage)
+@decorate(MatchContent("COVID-19"))
 async def COVID(app: Ariadne, group: Group):
     top_10, img = await get_COVID_19()
     await app.send_group_message(group, MessageChain([
@@ -41,8 +36,9 @@ async def COVID(app: Ariadne, group: Group):
     ]))
 
 async def get_COVID_19(pic=True):
-    headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
-                       'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
+    headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                           'AppleWebKit/537.36 (KHTML, like Gecko) '
+                           'Chrome/81.0.4044.69 Safari/537.36 Edg/81.0.416.34'}
     async with aiohttp.request("GET", "https://c.m.163.com/ug/api/wuhan/app/data/list-total", headers=headers) as r:
         reponse = await r.json()
     country_total = reponse['data']['areaTree']
@@ -60,7 +56,7 @@ async def get_COVID_19(pic=True):
 
     # 创建一个点数为 8 x 6 的窗口, 并设置分辨率为 80像素/每英寸
     plt.figure(figsize=(30, 20), dpi=100)
-    plt.style.use("dark_background") #type: ignore
+    plt.style.use("dark_background")
         # 包含每个柱子下标的序列
     index = np.arange(20)
     # 柱子的宽度

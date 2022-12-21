@@ -13,7 +13,7 @@ from graia.ariadne.message.parser.twilight import (FullMatch, ResultValue,
                                                    Twilight, WildcardMatch)
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, dispatch
 from PIL import Image as IMG
 
 channel = Channel.current()
@@ -66,10 +66,8 @@ def make_petpet(file, squish=0):
         gifs.append(gif_frame)
     return iio.imwrite("<bytes>", gifs, extension=".gif", loop=0, during=40, subrectangles=True)
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight([FullMatch("摸头"), WildcardMatch() @ "para"])]
-))
+@listen(GroupMessage)
+@dispatch(Twilight(FullMatch("摸头"), WildcardMatch() @ "para"))
 async def petpet(app: Ariadne, group: Group, member: Member, para: Annotated[MessageChain, ResultValue()]):
     user = para.get_first(At).target if para.has(At) else member.id
     profile_url = f"https://q2.qlogo.cn/headimg_dl?dst_uin={user}&spec=640"

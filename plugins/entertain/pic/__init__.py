@@ -4,7 +4,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Image
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen
 
 import aiohttp
 from PIL import Image as IMG
@@ -17,7 +17,7 @@ channel.name("LittleBro")
 channel.description("@一个人说一句小老弟试试")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(listening_events=[GroupMessage]))
+@listen(GroupMessage)
 async def xiaolaodi(app: Ariadne, group: Group, message: MessageChain, member: Member):
     if '小老弟' in message.display and message.has(At):
         xiaolaodi = IMG.open(Path(__file__).parent/'小老弟.png')

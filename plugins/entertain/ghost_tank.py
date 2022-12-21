@@ -2,12 +2,13 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.message.parser.twilight import Twilight, MatchResult
-from graia.ariadne.model import Group, Member
+from graia.ariadne.message.parser.twilight import Twilight, ResultValue
+from graia.ariadne.model import Group
 
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen, dispatch
 
+from typing import Annotated
 from PIL import Image as IMG
 from io import BytesIO
 import numpy as np
@@ -22,13 +23,10 @@ channel.name("GhostTank")
 channel.description("发送'ghost_tank [图][图]'获取幻影坦克黑白图")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight.from_command("ghost_tank {para}")]
-))
-async def ghost_tank(app: Ariadne, group: Group, member: Member, para: MatchResult):
-    assert para.result
-    if len(p := para.result.get(Image)) == 2:
+@listen(GroupMessage)
+@dispatch(Twilight.from_command("ghost_tank {para}"))
+async def ghost_tank(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
+    if len(p := para.get(Image)) == 2:
         pics = await asyncio.gather(*[i.get_bytes() for i in p])
         (await asyncio.to_thread(gray_car, *pics)).save(b := BytesIO(), format='PNG')
         await app.send_group_message(group, MessageChain(Image(data_bytes=b.getvalue())))

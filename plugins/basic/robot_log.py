@@ -10,12 +10,10 @@ import matplotlib.pyplot as plt
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
+from graia.ariadne.message.element import Plain, Image
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel, Saya
-from graia.saya.builtins.broadcast.schema import ListenerSchema
-from graia.scheduler import timers
-from graia.scheduler.saya.schema import SchedulerSchema
+from graiax.shortcut.saya import listen, crontab
 
 matplotlib.use('Agg')
 
@@ -40,8 +38,8 @@ channel = Channel.current()
 admin_group = saya.access('all_setting')['admin_group']
 lock = asyncio.Lock()
 
-@channel.use(SchedulerSchema(timers.crontabify('0 0 * * *')))
-async def update_log():
+@crontab('0 0 * * *')
+async def update_log(app: Ariadne):
     global log_name, conn, cur
     await asyncio.sleep(3)
     
@@ -65,8 +63,13 @@ async def update_log():
             MESSAGE       TEXT     NOT NULL
             );''')
 
+@listen(GroupMessage)
+async def log(app: Ariadne, group: Group, message: MessageChain, member:Member):
+    data = [datetime.datetime.now(), group.id, member.id, message.as_persistent_string(binary=False)]
+    cur.execute("INSERT into log values (?, ?, ?, ?)", data)
 
-@channel.use(SchedulerSchema(timers.crontabify('1 0 * * *')))
+
+@crontab('1 0 * * *')
 async def send_log(app: Ariadne):
     await asyncio.sleep(5)
     send_date = datetime.date.today()-datetime.timedelta(days = 1)
@@ -79,7 +82,7 @@ async def send_log(app: Ariadne):
         "SENDTIME < datetime('Now', 'localtime', 'start of day', '-{} hours')")
     data = [list(cur_.execute(sql_cmd.format(t+1, t)))[0][0] for t in reversed(range(24))]
 
-    font = fm.FontProperties(fname='src/font/SourceHanSans-Medium.otf')
+    font = fm.FontProperties(fname='src/font/SourceHanSans-Medium.otf') # type: ignore
     plt.figure(figsize=(10,5), dpi=100)
     plt.style.use("dark_background")
     plt.xlabel('时间(h)', fontproperties=font)
@@ -99,8 +102,3 @@ async def send_log(app: Ariadne):
         ]))
     cur_.close()
     conn_.close()
-
-@channel.use(ListenerSchema(listening_events=[GroupMessage]))
-async def log(app: Ariadne, group: Group, message: MessageChain, member:Member):
-    data = [datetime.datetime.now(), group.id, member.id, message.as_persistent_string(binary=False)]
-    cur.execute("INSERT into log values (?, ?, ?, ?)", data)

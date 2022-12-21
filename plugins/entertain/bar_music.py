@@ -7,10 +7,10 @@ from graia.ariadne.message.element import Voice
 from graia.ariadne.message.parser.twilight import (FullMatch, ResultValue,
                                                    SpacePolicy, Twilight,
                                                    RegexMatch)
-from graia.ariadne.model import Group, Member
-from graia.saya import Channel, Saya
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graia.ariadne.model import Group
+from graia.saya import Channel
 from graiax import silkcoder
+from graiax.shortcut.saya import listen, dispatch
 
 channel = Channel.current()
 
@@ -18,18 +18,14 @@ channel.name("BarMusic")
 channel.description("发送'bar_music [歌曲名]'获取语音音乐")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(
-    listening_events=[GroupMessage],
-    inline_dispatchers=[Twilight(
-        FullMatch("bar_music").space(SpacePolicy.FORCE),
-        RegexMatch(r".+") @ "para"
-    )]
-))
+
+@listen(GroupMessage)
+@dispatch(Twilight(FullMatch("bar_music").space(SpacePolicy.FORCE), RegexMatch(r".+") @ "para"))
 async def bar_music(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
-    song_name = str(para).strip() 
+    song_name = str(para).strip()
     if not song_name:
         return await app.send_group_message(group, MessageChain('点啥歌？'))
-    
+
     search_data = await Netease.search(song_name)
     try:
         download = await Netease.download_song(search_data[0]['id'])

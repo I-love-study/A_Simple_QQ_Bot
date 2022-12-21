@@ -26,7 +26,7 @@ async def hotword(app: Ariadne, group: Group, message: Annotated[MessageChain, D
         "Chrome/105.0.0.0 Safari/537.36 Edg/105.0.1343.53"
     }
     async with aiohttp.request("GET", url, headers=headers) as r:
-        html = etree.HTML(await r.text()) #type: ignore
+        html = etree.HTML(await r.text()) # type: ignore
     
     for i in range(1, 11):
         title = html.xpath(f'//div[@class="masonry"]/div[{i}]//strong[@class="title pre"]//text()')
