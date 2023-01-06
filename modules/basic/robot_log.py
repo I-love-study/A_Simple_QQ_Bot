@@ -82,7 +82,7 @@ async def send_log(app: Ariadne):
         "SENDTIME < datetime('Now', 'localtime', 'start of day', '-{} hours')")
     data = [list(cur_.execute(sql_cmd.format(t+1, t)))[0][0] for t in reversed(range(24))]
 
-    font = fm.FontProperties(fname='src/font/SourceHanSans-Medium.otf') # type: ignore
+    font = fm.FontProperties(fname='static/font/SourceHanSans-Medium.otf') # type: ignore
     plt.figure(figsize=(10,5), dpi=100)
     plt.style.use("dark_background")
     plt.xlabel('时间(h)', fontproperties=font)

@@ -1,20 +1,17 @@
 from graia.ariadne.app import Ariadne
 
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import *
+from graia.ariadne.message.element import Image
 from graia.broadcast.builtin.event import ExceptionThrowed
 from graia.saya import Saya, Channel
 from graia.saya.builtins.broadcast.schema import ListenerSchema
 
-from io import StringIO, BytesIO
+from io import StringIO
 import traceback
-from PIL import ImageFont, ImageDraw, Image as IMG
-from expand.text import analyse_font
+from utils.text import text2pic
 
 saya = Saya.current()
 channel = Channel.current()
-
-font = ImageFont.truetype('src/font/SourceHanSansHW-Regular.otf', 40)
 
 async def make_pic(event):
     with StringIO() as fp:
@@ -25,20 +22,13 @@ async def make_pic(event):
         f"异常内容：\n{event.exception}\n"
         f"异常回滚：\n{tb}"
     )
-
-    new_output = analyse_font(3200, output, font)
-    img = IMG.new("RGB", font.getsize_multiline(new_output), (0, 0, 0))
-    ImageDraw.Draw(img).text((0, 0), new_output, fill="white", font=font)
-    img.save(out := BytesIO(), format="PNG")
-    return out.getvalue()
-
+    return text2pic(str(output), 0xFFFFFFFF, 40, 5, 3200, 0xFF000000, "bytes")
 
 @channel.use(ListenerSchema(listening_events=[ExceptionThrowed]))
 async def exception_catch(event: ExceptionThrowed):
-    
     if not isinstance(event.event, ExceptionThrowed):
         app: Ariadne = Ariadne.current()
         await app.send_group_message(
             saya.access('all_setting')['admin_group'],
-            MessageChain(Image(data_bytes=make_pic(event)))
+            MessageChain(Image(data_bytes=await make_pic(event)))
         )

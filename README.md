@@ -86,7 +86,7 @@ load_modules_folder: #需要导入的文件夹
 
 功能介绍：以语音格式发送网易云音乐(注：只发前1min)  
 调用办法："bar_music [音乐名称]"  
-需要的第三方模块：graia-Template, graiax-silkcoder, [expand/Netease](expand/Netease.py)
+需要的第三方模块：graia-Template, graiax-silkcoder, [utils/Netease](utils/Netease.py)
 
 ### [今日二次元人物生日查看](plugins/entertain/birthday_searcher.py)
 
@@ -128,13 +128,13 @@ load_modules_folder: #需要导入的文件夹
 
 功能介绍：制作类似pornhub图标的图标  
 调用办法："ph [左文] [右文]"  
-需要的第三方模块：pillow, [expand/text](expand/text.py)
+需要的第三方模块：pillow, [utils/text](utils/text.py)
 
 ### [B站视频/音频信息查看](plugins/entertain/bili)
 
 功能介绍：获取B站视频(文字形式)/音频(图片形式)信息  
 调用办法："[av号/BV号/AU号]"  
-需要的第三方模块：pillow, [expand/bilibili](expand/bilibili.py)
+需要的第三方模块：pillow, [utils/bilibili](utils/bilibili.py)
 
 ### [摸鱼](plugins/entertain/moyu.py)
 
@@ -158,7 +158,7 @@ load_modules_folder: #需要导入的文件夹
 
 功能介绍：捕获异常并发送到管理群  
 调用办法：报错  
-需要的第三方模块：pillow, [expand/text](expand/text.py)
+需要的第三方模块：pillow, [utils/text](utils/text.py)
 
 ### [普通回复](plugins/basic/normal_reply.py)
 

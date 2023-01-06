@@ -34,8 +34,8 @@ async def get_avatar(uid, a=525, full_ver=False):
         img.paste(official, (off_point, off_point), mask=official)
 
     if info['official']['role'] in [1, 2, 7]:
-        flash(r"expand/bilibili_src/flash_yellow.png")
+        flash(r"utils/bilibili_src/flash_yellow.png")
     elif info['official']['role'] in [3, 4, 5, 6]:
-        flash(r"expand/bilibili_src/flash_blue.png")
+        flash(r"utils/bilibili_src/flash_blue.png")
     
     return img
