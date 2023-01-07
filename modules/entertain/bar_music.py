@@ -1,5 +1,5 @@
 from typing import Annotated
-from utils import Netease
+from utils import netease
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
@@ -26,9 +26,9 @@ async def bar_music(app: Ariadne, group: Group, para: Annotated[MessageChain, Re
     if not song_name:
         return await app.send_group_message(group, MessageChain('点啥歌？'))
 
-    search_data = await Netease.search(song_name)
+    search_data = await netease.search(song_name)
     try:
-        download = await Netease.download_song(search_data[0]['id'])
+        download = await netease.download_song(search_data[0]['id'])
     except Exception:
         await app.send_group_message(group, MessageChain('不知道为什么，但是我就是放不了'))
         return

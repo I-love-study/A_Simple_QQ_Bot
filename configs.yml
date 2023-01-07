@@ -5,8 +5,8 @@ admin_group: 10086
 ultra_administration:
   - 10001
 load_modules_folder:
-  - plugins/basic
-  - plugins/entertain
+  - modules/basic
+  - modules/entertain
 
-plugins:
+modules:
   saucenao_key: ""

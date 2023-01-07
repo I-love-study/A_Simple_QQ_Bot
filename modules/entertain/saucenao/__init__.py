@@ -20,7 +20,7 @@ channel.name("Saucenao")
 channel.description("以图搜图")
 channel.author("I_love_study")
 
-apikey = saya.access('all_setting')['plugins']['saucenao_key']
+apikey = saya.access('all_setting')['modules']['saucenao_key']
 have_apikey = bool(apikey)
 
 # 其他代码来源于 saucenao-api
