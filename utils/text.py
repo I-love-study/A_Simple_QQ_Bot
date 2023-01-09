@@ -1,6 +1,8 @@
-from typing import Optional, Literal, overload
-import skia
+import unicodedata
+from typing import Literal, Optional, overload
+
 import PIL.Image
+import skia
 
 Ink = str | int | tuple[int, int, int] | tuple[int, int, int, int]
 
@@ -86,7 +88,8 @@ class MultiWriter:
             height += self.size + self.stroke_width
 
     def text2pic(self, text: str, color: Ink = 0xFFFFFFFF, background_color: Optional[Ink] = None) -> skia.Image:
-        analyse = self.analyse_font(text)
+        # 为了防止有组合字符写不出来
+        analyse = self.analyse_font(unicodedata.normalize("NFC", text))
         self.build_textblob(analyse)
         blob = self.builder.make()
         rect = blob.bounds()
@@ -159,12 +162,9 @@ def text2pic(text: str, # type: ignore
         return image.encodeToData(image_type, quality).bytes()
 
 if __name__ == "__main__":
-    text = ("👴哭了"*10 + "\n")*10
-    print(len(text))
-    import time
-    a = MultiWriter(stroke_width=10, width=1700)
-    t = time.time()
+    text = unicodedata.normalize("NFC", "āáăà")
+    
+    a = MultiWriter(stroke_width=10)
     b = a.text2pic(text).encodeToData(skia.kPNG, 100).bytes()
-    print(time.time() - t)
     with open("test.png", "wb") as f:
         f.write(b)
