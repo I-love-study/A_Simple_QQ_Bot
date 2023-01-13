@@ -43,12 +43,20 @@ class MultiWriter:
         seek = 0 if self.height != 1 else self.word_font.measureText("...")
         height = 1
 
+        def get_last():
+            try:
+                return analyse[-1][-1]
+            except IndexError:
+                return None
+
         for char in text:
             ord_char = ord(char)
             if self.word_font.unicharToGlyph(ord_char):
                 select_font = self.word_font
             elif self.emoji_font.unicharToGlyph(ord_char):
                 select_font = self.emoji_font
+            elif (k := get_last()) is not None:
+                select_font = k[1]
             else:
                 select_font = skia.Font(self.fontmgr.matchFamilyStyleCharacter(
                     "monospace", skia.FontStyle(), ['zh-cn'],ord_char), self.size)
@@ -71,8 +79,8 @@ class MultiWriter:
 
             seek += char_size
             
-            if analyse[-1] and analyse[-1][-1][1] == select_font:
-                analyse[-1][-1][0] += char
+            if (k := get_last()) and k[1] == select_font:
+                k[0] += char
             else:
                 analyse[-1].append([char, select_font])            
 
@@ -162,7 +170,7 @@ def text2pic(text: str, # type: ignore
         return image.encodeToData(image_type, quality).bytes()
 
 if __name__ == "__main__":
-    text = unicodedata.normalize("NFC", "āáăà")
+    text = unicodedata.normalize("NFC", "\n\nā\n\náăà")
     
     a = MultiWriter(stroke_width=10)
     b = a.text2pic(text).encodeToData(skia.kPNG, 100).bytes()
