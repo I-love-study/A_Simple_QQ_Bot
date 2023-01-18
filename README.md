@@ -153,6 +153,13 @@ tips: 你不想装 ujson，你直接把 `import ujson as json` 改成 `import js
 需要的第三方模块：aiohttp, yarl  
 ⚠️ Warning ⚠️ 因为特殊原因，该模块调用的`小鸡字典`网站已经关闭，现已无法使用
 
+### [我有一个朋友](modules/entertain/i_have_a_friend.py)
+
+功能介绍：返回一张你朋友说话的截图  
+调用指令：我(有一?个)?朋友
+~~抄袭~~借鉴： [SAGIRI-kawaii/sagiri-bot](https://github.com/SAGIRI-kawaii/sagiri-bot)  
+需要第三方模块：pillow, [utils/text](utils/text.py)
+
 ### [后台聊天](modules/basic/console_chat.py)
 
 功能介绍：通过 Console 模块在后台聊天  

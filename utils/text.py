@@ -73,16 +73,16 @@ class MultiWriter:
                 else:
                     analyse.append([])
                     seek = 0
-                
+
                 if char == "\n":
                     continue
 
             seek += char_size
-            
+
             if (k := get_last()) and k[1] == select_font:
                 k[0] += char
             else:
-                analyse[-1].append([char, select_font])            
+                analyse[-1].append([char, select_font])
 
         return analyse
 
@@ -95,14 +95,18 @@ class MultiWriter:
                 seek += font.measureText(word)
             height += self.size + self.stroke_width
 
-    def text2pic(self, text: str, color: Ink = 0xFFFFFFFF, background_color: Optional[Ink] = None) -> skia.Image:
+    def text2pic(self,
+                 text: str,
+                 color: Ink = 0xFFFFFFFF,
+                 background_color: Optional[Ink] = None,
+                 ensure_width: bool = True) -> skia.Image:
         # 为了防止有组合字符写不出来
         analyse = self.analyse_font(unicodedata.normalize("NFC", text))
         self.build_textblob(analyse)
         blob = self.builder.make()
         rect = blob.bounds()
 
-        width = self.width if self.width else int(rect.right())
+        width = max(self.width if self.width and ensure_width else int(rect.right()), 1)
         height = ((len(analyse) - 1) * (self.stroke_width + self.size) +
                   int(self.word_font.getSpacing()))
 
@@ -122,6 +126,7 @@ def text2pic(text: str,
              width: int = 0,
              height: int = 0,
              background_color: Optional[Ink] = None,
+             ensure_width: bool = True,
              ret_type:Literal["bytes"] = "bytes",
              image_type: str = "PNG",
              quality: int = 80) -> bytes:
@@ -135,6 +140,7 @@ def text2pic(text: str,
              width: int = 0,
              height: int = 0,
              background_color: Optional[Ink] = None,
+             ensure_width: bool = True,
              ret_type:Literal["skia"]= "skia") -> skia.Image:
     ...
 
@@ -146,6 +152,7 @@ def text2pic(text: str,
              width: int = 0,
              height: int = 0,
              background_color: Optional[Ink] = None,
+             ensure_width: bool = True,
              ret_type:Literal["PIL"] = "PIL") -> PIL.Image.Image:
     ...
 
@@ -156,14 +163,15 @@ def text2pic(text: str, # type: ignore
              width: int = 0,
              height: int = 0,
              background_color: Optional[Ink] = None,
+             ensure_width: bool = True,
              ret_type:Literal["skia", "PIL", "bytes"] = "skia",
              **kwargs):
     writer = MultiWriter(size, stroke_width, width, height)
-    image = writer.text2pic(text, color, background_color)
+    image = writer.text2pic(text, color, background_color, ensure_width)
     if ret_type == "skia":
         return image
     elif ret_type == "PIL":
-        return PIL.Image.fromarray(image, 'RGBa') # type: ignore
+        return PIL.Image.fromarray(image.convert(alphaType=skia.kUnpremul_AlphaType))
     elif ret_type == "bytes":
         image_type = getattr(skia.EncodedImageFormat, "k" + kwargs.get("image_type", "PNG").upper())
         quality = kwargs.get("quality", 80)
@@ -171,7 +179,7 @@ def text2pic(text: str, # type: ignore
 
 if __name__ == "__main__":
     text = unicodedata.normalize("NFC", "\n\nā\n\náăà")
-    
+
     a = MultiWriter(stroke_width=10)
     b = a.text2pic(text).encodeToData(skia.kPNG, 100).bytes()
     with open("test.png", "wb") as f:
