@@ -18,6 +18,9 @@ channel.author("I_love_study")
 
 @channel.use(ListenerSchema(listening_events=[GroupMessage]))
 async def hotword(app: Ariadne, group: Group, message: Annotated[MessageChain, DetectSuffix("是什么梗")]):
+    await app.send_message(group, MessageChain("我不造啊"))
+    return
+
     url = URL("https://jikipedia.com/search") % {"phrase": str(message)}
     headers = {
         "User-Agent":

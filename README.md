@@ -150,7 +150,8 @@ tips: 你不想装 ujson，你直接把 `import ujson as json` 改成 `import js
 
 功能介绍：获取梗相对应的知识
 调用方法：`xxx是什么梗`
-需要的第三方模块：aiohttp, yarl, lxml
+需要的第三方模块：aiohttp, yarl  
+⚠️ Warning ⚠️ 因为特殊原因，该模块调用的`小鸡字典`网站已经关闭，现已无法使用
 
 ### [后台聊天](modules/basic/console_chat.py)
 
