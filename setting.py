@@ -7,15 +7,10 @@ from graia.ariadne.message.parser.twilight import Twilight, FullMatch, WildcardM
 from graia.saya import Saya, Channel
 from graiax.shortcut.saya import listen, decorate, dispatch, priority
 from graia.broadcast.builtin.decorators import Depend
-from io import StringIO, BytesIO
 from arclet.alconna import Alconna, Args, CommandMeta, Option, Subcommand, Arparma, MultiVar
-from arclet.alconna.graia import match_value, AtID, AlconnaDispatcher, match_path
+from arclet.alconna.graia import AlconnaDispatcher, match_path
 from graia.broadcast.exceptions import ExecutionStop
 
-from PIL import Image as IMG
-from PIL import ImageDraw, ImageFont
-from graiax.msgparse import MessageChainParser, MsgString, ParserExit
-import regex
 import skia
 from orm import *
 from decorators import admin_check
