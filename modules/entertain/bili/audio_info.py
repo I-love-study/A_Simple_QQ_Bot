@@ -67,12 +67,12 @@ async def audio_make(auid):
         color_mask=SolidFillColorMask(front_color=(229,229,229),back_color=(26,26,26))
          )
     '''
-    src_path = Path(__file__).parent / "src"
+    static_path = Path(__file__).parent / "static"
 
     qrimg = qr.make_image(fill_color=(229,229,229),back_color=(26,26,26))
     assert isinstance(qrimg, PilImage)
     qrimg = qrimg.resize((165, 162), IMG.Resampling.LANCZOS)
-    bottom = IMG.open(src_path/"black_down.png")
+    bottom = IMG.open(static_path/"black_down.png")
     qrimg_mask = IMG.new("1", (165, 162))
     ImageDraw.Draw(qrimg_mask).rounded_rectangle((0, 0, 165, 162), 6, 1)
     bottom.paste(qrimg, (654, 75), mask=qrimg_mask)
@@ -82,7 +82,7 @@ async def audio_make(auid):
     music_img = IMG.open(BytesIO(cover)).resize((280, 280))
     music_mask = IMG.new("1", (280, 280))
     ImageDraw.Draw(music_mask).rounded_rectangle((0, 0, 280, 280), 10, 1)
-    music_bg = IMG.open(src_path/"audio_pic_bg.png").convert("RGBA")
+    music_bg = IMG.open(static_path/"audio_pic_bg.png").convert("RGBA")
     music_bg.paste(music_img, (8, 30), mask=music_mask)
 
     bg = IMG.new("RGBA", (1080, 900), (26, 26, 26))
