@@ -19,9 +19,16 @@ def get_color(color: Ink) -> int:
     else:
         return skia.Color(*color)
 
+
 class MultiWriter:
 
-    def __init__(self, size: int = 50, stroke_width: int = 0, width: int = 0, height: int = 0):
+    def __init__(self,
+                 size: int = 50,
+                 stroke_width: int = 0,
+                 width: int = 0,
+                 height: int = 0,
+                 word_font_path: str = "static/font/SourceHanSans-Medium.ttf",
+                 emoji_font_path="static/font/NotoColorEmoji.ttf"):
         self.fontmgr = skia.FontMgr()
         self.size = size
         self.width = width
@@ -29,13 +36,11 @@ class MultiWriter:
         self.stroke_width = stroke_width
         # 能从文件来就从文件来，从文件中来不了再从系统里随便找一个
         self.emoji_font = skia.Font(
-            skia.Typeface.MakeFromFile("static/font/NotoColorEmoji.ttf")
-            or self.fontmgr.matchFamilyStyleCharacter("monospace", skia.FontStyle(), ['zh-cn'],
-                                                      ord('👴')), size)
+            skia.Typeface.MakeFromFile(emoji_font_path) or self.fontmgr.matchFamilyStyleCharacter(
+                "monospace", skia.FontStyle(), ['zh-cn'], ord('👴')), size)
         self.word_font = skia.Font(
-            skia.Typeface.MakeFromFile("static/font/SourceHanSans-Medium.ttf")
-            or self.fontmgr.matchFamilyStyleCharacter("monospace", skia.FontStyle(), ['zh-cn'],
-                                                      ord('你')), size)
+            skia.Typeface.MakeFromFile(word_font_path) or self.fontmgr.matchFamilyStyleCharacter(
+                "monospace", skia.FontStyle(), ['zh-cn'], ord('你')), size)
         self.builder = skia.TextBlobBuilder()
 
     def analyse_font(self, text: str):
@@ -58,8 +63,9 @@ class MultiWriter:
             elif (k := get_last()) is not None:
                 select_font = k[1]
             else:
-                select_font = skia.Font(self.fontmgr.matchFamilyStyleCharacter(
-                    "monospace", skia.FontStyle(), ['zh-cn'],ord_char), self.size)
+                select_font = skia.Font(
+                    self.fontmgr.matchFamilyStyleCharacter("monospace", skia.FontStyle(), ['zh-cn'],
+                                                           ord_char), self.size)
 
             char_size = select_font.measureText(char)
             if (self.width and seek + char_size > self.width) or char == "\n":
@@ -118,6 +124,7 @@ class MultiWriter:
         canvas.drawTextBlob(blob, 0, 0, paint)
         return surface.makeImageSnapshot()
 
+
 @overload
 def text2pic(text: str,
              color: Ink = 0xFFFFFFFF,
@@ -127,11 +134,14 @@ def text2pic(text: str,
              height: int = 0,
              background_color: Optional[Ink] = None,
              ensure_width: bool = True,
-             ret_type:Literal["bytes"] = "bytes",
+             word_font_path: str = "static/font/SourceHanSans-Medium.ttf",
+             emoji_font_path="static/font/NotoColorEmoji.ttf",
+             ret_type: Literal["bytes"] = "bytes",
              image_type: str = "PNG",
              quality: int = 80) -> bytes:
     ...
 
+
 @overload
 def text2pic(text: str,
              color: Ink = 0xFFFFFFFF,
@@ -141,8 +151,11 @@ def text2pic(text: str,
              height: int = 0,
              background_color: Optional[Ink] = None,
              ensure_width: bool = True,
-             ret_type:Literal["skia"]= "skia") -> skia.Image:
+             word_font_path: str = "static/font/SourceHanSans-Medium.ttf",
+             emoji_font_path: str = "static/font/NotoColorEmoji.ttf",
+             ret_type: Literal["skia"] = "skia") -> skia.Image:
     ...
+
 
 @overload
 def text2pic(text: str,
@@ -153,20 +166,26 @@ def text2pic(text: str,
              height: int = 0,
              background_color: Optional[Ink] = None,
              ensure_width: bool = True,
-             ret_type:Literal["PIL"] = "PIL") -> PIL.Image.Image:
+             word_font_path: str = "static/font/SourceHanSans-Medium.ttf",
+             emoji_font_path: str = "static/font/NotoColorEmoji.ttf",
+             ret_type: Literal["PIL"] = "PIL") -> PIL.Image.Image:
     ...
 
-def text2pic(text: str, # type: ignore
-             color: Ink = "WHITE",
-             size: int = 50,
-             stroke_width: int = 0,
-             width: int = 0,
-             height: int = 0,
-             background_color: Optional[Ink] = None,
-             ensure_width: bool = True,
-             ret_type:Literal["skia", "PIL", "bytes"] = "skia",
-             **kwargs):
-    writer = MultiWriter(size, stroke_width, width, height)
+
+def text2pic(
+        text: str,
+        color: Ink = "WHITE",
+        size: int = 50,
+        stroke_width: int = 0,
+        width: int = 0,
+        height: int = 0,
+        background_color: Optional[Ink] = None,
+        ensure_width: bool = True,
+        word_font_path: str = "static/font/SourceHanSans-Medium.ttf",
+        emoji_font_path: str = "static/font/NotoColorEmoji.ttf",
+        ret_type: Literal["skia", "PIL", "bytes"] = "skia",
+        *args, **kwargs) -> bytes | skia.Image | PIL.Image.Image:
+    writer = MultiWriter(size, stroke_width, width, height, word_font_path, emoji_font_path)
     image = writer.text2pic(text, color, background_color, ensure_width)
     if ret_type == "skia":
         return image
@@ -176,6 +195,7 @@ def text2pic(text: str, # type: ignore
         image_type = getattr(skia.EncodedImageFormat, "k" + kwargs.get("image_type", "PNG").upper())
         quality = kwargs.get("quality", 80)
         return image.encodeToData(image_type, quality).bytes()
+
 
 if __name__ == "__main__":
     text = unicodedata.normalize("NFC", "\n\nā\n\náăà")
