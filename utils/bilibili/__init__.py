@@ -17,8 +17,8 @@ async def get_pic(url):
 async def get_avatar(uid, a=525):
     params = {"mid": uid}
     url = "https://api.bilibili.com/x/space/acc/info"
-    async with aiohttp.request("GET", url, params=params) as r:
-        info = await r.json()
+    async with aiohttp.request("GET", url, params=params, headers=headers) as r:
+        info = (await r.json())["data"]
     img = Image.new("RGBA", (a, a), (0, 0, 0, 0))
 
     # 粘贴头像
@@ -31,9 +31,9 @@ async def get_avatar(uid, a=525):
     img.paste(face, (paste_point, paste_point), mask=face_mask)
 
     # 粘贴头像框
-    pendant = (await get_pic(info['pendant']['image_enhance'])).resize((a, a),
-                                                                       Image.Resampling.LANCZOS)
-    img.paste(pendant, (0, 0), mask=pendant)
+    if image_enhance := info['pendant']['image_enhance']:
+        pendant = (await get_pic(image_enhance)).resize((a, a), Image.Resampling.LANCZOS)
+        img.paste(pendant, (0, 0), mask=pendant)
 
     # 粘贴小闪电
     def flash(p):

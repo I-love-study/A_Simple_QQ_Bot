@@ -51,7 +51,7 @@ async def audio_make(auid):
     url = "https://www.bilibili.com/audio/music-service-c/web/song/info"
     params = {"sid": auid}
     async with aiohttp.request("GET", url, params=params) as r:
-        data = await r.json()
+        data = (await r.json())["data"]
 
     qr = qrcode.QRCode(
         version=3,
