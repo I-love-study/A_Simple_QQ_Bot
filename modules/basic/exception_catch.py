@@ -4,7 +4,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.broadcast.builtin.event import ExceptionThrowed
 from graia.saya import Saya, Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graiax.shortcut.saya import listen
 
 from io import StringIO
 import traceback
@@ -24,7 +24,7 @@ async def make_pic(event):
     )
     return text2pic(str(output), 0xFFFFFFFF, 40, 5, 3200, 0xFF000000, "bytes")
 
-@channel.use(ListenerSchema(listening_events=[ExceptionThrowed]))
+@listen(ExceptionThrowed)
 async def exception_catch(event: ExceptionThrowed):
     if not isinstance(event.event, ExceptionThrowed):
         app: Ariadne = Ariadne.current()

@@ -3,9 +3,9 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.parser.base import DetectSuffix
-from graia.ariadne.model import Group, Member
-from graia.saya import Saya, Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
+from graia.ariadne.model import Group
+from graia.saya import Channel
+from graiax.shortcut.saya import listen
 
 from lxml import etree
 from yarl import URL
@@ -16,7 +16,7 @@ channel.name("HotwordSearch")
 channel.description("获取热词解释")
 channel.author("I_love_study")
 
-@channel.use(ListenerSchema(listening_events=[GroupMessage]))
+@listen(GroupMessage)
 async def hotword(app: Ariadne, group: Group, message: Annotated[MessageChain, DetectSuffix("是什么梗")]):
     await app.send_message(group, MessageChain("我不造啊"))
     return

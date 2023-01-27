@@ -11,7 +11,6 @@ from graia.ariadne.message.element import Image
 from graia.ariadne.message.parser.twilight import ResultValue, Twilight
 from graia.ariadne.model import Group
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
 from graiax.shortcut.saya import dispatch, listen
 from PIL import Image as IMG
 from PIL import ImageDraw, ImageFont

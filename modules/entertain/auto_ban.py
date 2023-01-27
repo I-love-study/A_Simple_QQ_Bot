@@ -4,7 +4,6 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.parser.base import MatchRegex
 from graia.ariadne.model import Group, Member
 from graia.saya import Channel
-from graia.saya.builtins.broadcast.schema import ListenerSchema
 from graiax.shortcut.saya import listen, decorate
 
 channel = Channel.current()
