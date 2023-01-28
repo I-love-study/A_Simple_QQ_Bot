@@ -33,9 +33,9 @@ channel.name("AVBVAU")
 channel.description("发送任意av/BV号获取视频信息")
 channel.author("I_love_study")
 
-font_path = Path(r"static\font\SourceHanSans-Medium.otf")
-font_heavy_path = Path(r"static\font\SourceHanSans-Heavy.otf")
-iconfont_path = Path(r"static\font\bilibili-iconfont.ttf")
+font_path = Path("static/font/SourceHanSans-Medium.otf")
+font_heavy_path = Path("static/font/SourceHanSans-Heavy.otf")
+iconfont_path = Path("static/font/bilibili-iconfont.ttf")
 static_path = Path(__file__).parent / "static"
 
 avid_re = r"(av|AV)(\d{1,12})"
