@@ -110,6 +110,8 @@ class MultiWriter:
         analyse = self.analyse_font(unicodedata.normalize("NFC", text))
         self.build_textblob(analyse)
         blob = self.builder.make()
+        if blob is None:
+            return skia.Surface(1, 1).makeImageSnapshot()
         rect = blob.bounds()
 
         width = max(self.width if self.width and ensure_width else int(rect.right()), 1)
@@ -198,9 +200,9 @@ def text2pic(
 
 
 if __name__ == "__main__":
-    text = unicodedata.normalize("NFC", "\n\nā\n\náăà")
-
+    #text = unicodedata.normalize("NFC", "\n\nā\n\náăà")
+    text = ""
     a = MultiWriter(stroke_width=10)
     b = a.text2pic(text).encodeToData(skia.kPNG, 100).bytes()
-    with open("test.png", "wb") as f:
-        f.write(b)
+    #with open("test.png", "wb") as f:
+    #    f.write(b)
