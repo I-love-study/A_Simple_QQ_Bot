@@ -64,13 +64,11 @@ async def video_info(app: Ariadne, group: Group, message: MessageChain, av: Rege
             app_dict = bapp.result.dict() # type: ignore
             content = json.loads(app_dict.get("content", {}))
             content = content.get("meta", {}).get("detail_1", {})
-            print(content)
             if content.get("title") == "哔哩哔哩":
                 b23url_str = content.get("qqdocurl")
             else:
                 content = json.loads(app_dict.get("content", {}))
                 content = content.get("meta", {}).get("news", {})
-                print(content)
                 if "哔哩哔哩" in content.get("desc", ""):
                     b23url_str = content.get("jumpUrl")
                 else:

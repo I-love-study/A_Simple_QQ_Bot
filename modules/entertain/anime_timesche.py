@@ -22,7 +22,7 @@ channel.description("发送anime/anime tomorrow/anime yesterday获取昨/今/明
 channel.author("I_love_study")
 
 @listen(GroupMessage)
-@dispatch(Twilight.from_command("[anime|番剧时刻表]  {para}"))
+@dispatch(Twilight.from_command("[anime|番剧时刻表] {para}"))
 async def anime(app: Ariadne, group: Group, para: Annotated[MessageChain, ResultValue()]):
     today = int(time.mktime(date.today().timetuple()))
     date2ts = {
