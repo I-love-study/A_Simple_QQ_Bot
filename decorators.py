@@ -16,32 +16,43 @@ class ConfigCheck(Decorator):
     '''判断是否符合插件文件夹设置'''
     pre = True
 
-    def __init__(self, folder, name):
+    def __init__(self, folder, name, sche=False):
         self.folder = folder
         self.name   = name
+        self.sche   = sche
 
     async def target(self, interface: DecoratorInterface):
-        try:
-            group = (await interface.dispatcher_interface.lookup_param("group", Group, None)).id
-        except RequirementCrashed:
-            group = None
-        try:
-            member = (await interface.dispatcher_interface.lookup_param("member", Member, None)).id
-        except RequirementCrashed:
-            member = None
+        if self.sche:
+            search = session.query(Module).filter_by(folder=self.folder, name=self.name).first()
+            if not (search and search.switch):
+                raise ExecutionStop
+        else:
+            dis = interface.dispatcher_interface
+            try:
+                group = (await dis.lookup_param("group", Group, None)).id
+            except RequirementCrashed:
+                group = None
+            try:
+                member = (await dis.lookup_param("member", Member, None)).id
+            except RequirementCrashed:
+                member = None
 
-        search = session.query(ModuleSetting).join(Module).filter(
-            Module.name == self.name,
-            Module.folder == self.folder,
-            ModuleSetting.group_id == group).first()
+            filters = [
+                Module.name == self.name,
+                Module.folder == self.folder,
+                ]
+            if group:
+                filters.append(ModuleSetting.group_id == group)
 
-        if not (search and search.module.switch and search.switch):
-            raise ExecutionStop
+            search = session.query(ModuleSetting).join(Module).filter(*filters).first()
 
-        search = session.query(QQGroup).filter_by(id=group).first()
+            if not (search and search.module.switch and search.switch):
+                raise ExecutionStop
 
-        if search and member in search.black_list:
-            raise ExecutionStop
+            search = session.query(QQGroup).filter_by(id=group).first()
+
+            if search and member in search.black_list:
+                raise ExecutionStop
 
 class SettingCheck(Decorator):
     pre = True
@@ -73,12 +84,17 @@ class SettingCheck(Decorator):
         am = self.active_members
         nm = self.negative_members
 
-        if any((
-            ag and group not in ag,
-            ng and group in ng,
-            am and member not in am,
-            nm and member in nm
-            )):            raise ExecutionStop()
+        if group:
+            if ag and group not in ag:
+                raise ExecutionStop()
+            if ng and group in ng:
+                raise ExecutionStop()
+        
+        if member:
+            if am and member not in am:
+                raise ExecutionStop()
+            if nm and member in nm:
+                raise ExecutionStop()
 
 def config_check(
     active_groups: list = [],

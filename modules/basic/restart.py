@@ -22,6 +22,7 @@ saya = Saya.current()
 channel = Channel.current()
 inc = create(InterruptControl)
 
+
 class GroupMessageInterrupt(Waiter.create([GroupMessage])):
 
     def __init__(self, group: Union[Group, int], member: Union[Member, int]):
@@ -33,22 +34,31 @@ class GroupMessageInterrupt(Waiter.create([GroupMessage])):
             return message
 
 @listen(GroupMessage)
-@decorate(decorators.config_check(active_members=[1450069615,2480328821]))
+@decorate(decorators.config_check(active_members=saya.access('all_setting')['ultra_administration']))
 @decorate(MatchContent("重启"))
 async def restart(app: Ariadne, group: Group, message: MessageChain, member:Member):
+    global is_restart
     await app.send_group_message(group, MessageChain('确定要重启机器人吗(是/否)'))
     get = await inc.wait(GroupMessageInterrupt(group, member))
-    if get.message_chain.display == '是':
-        os.system('git pull')
-        Path('restart_time').write_text(f'{group.id}|{time.time()}', encoding='UTF-8')
-        if platform.system() == 'Windows':
-            os.system('start /i /max main.py')
-            app.stop()
-            exit()
-        elif platform.system() == 'Linux':
-            await app.send_group_message(group, MessageChain('警告，现阶段Linux需要手动启动'))
-            app.stop()
-            exit()
+    if str(get) != '是':
+        await app.send_message(group, MessageChain("已取消"))
+        return
+    
+    os.system('git pull')
+    Path('restart_time').write_text(f'{group.id}|{time.time()}', encoding='UTF-8')
+    if platform.system() == 'Windows':
+        os.system('start /i /max main.py')
+    elif platform.system() == 'Linux' and os.environ.get("TMUX"):
+        os.system(f'tmux split-window -c {Path().absolute()} pdm run python main.py')
+        is_restart = True
+    elif platform.system() == "MACOS":
+        await app.send_group_message(group, MessageChain('我不会，长大后再学吧'))
+        return
+    else:
+        await app.send_group_message(group, MessageChain('警告，你的环境没有用TMUX需要手动启动'))
+        return
+    app.stop()
+    exit()
 
 @listen(ApplicationLaunched)
 async def check_restart(app: Ariadne):
