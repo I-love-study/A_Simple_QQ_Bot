@@ -2,6 +2,6 @@ __pycache__/
 /data
 /test
 /test.*
-.pdm.toml
+.pdm-python
 .venv
 *.egg-info
