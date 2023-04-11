@@ -28,7 +28,8 @@ dependencies = [
     "pyyaml",
     "graiax-shortcut",
     "skia-python",
-    "arclet-alconna-graia"
+    "arclet-alconna-graia",
+    "aniso8601>=9.0.1",
 ]
 requires-python = ">=3.10,<4"
 license = {text = "AGPL-v3"}

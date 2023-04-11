@@ -55,6 +55,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "aniso8601"
+version = "9.0.1"
+summary = "A library for parsing ISO 8601 strings."
+
+[[package]]
 name = "arclet-alconna"
 version = "1.6.6"
 requires_python = ">=3.8"
@@ -628,7 +633,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev"]
-content_hash = "sha256:cda67d24e41663b7b5c96e9291856f534aa0115ddb05455554968259f6babd9c"
+content_hash = "sha256:3287400eb98ef91ba756a755442bd637c72f1dc68e835056253a333ee3f23fdc"
 
 [metadata.files]
 "aiodns 3.0.0" = [
@@ -731,6 +736,10 @@ content_hash = "sha256:cda67d24e41663b7b5c96e9291856f534aa0115ddb05455554968259f
 "aiosignal 1.3.1" = [
     {url = "https://files.pythonhosted.org/packages/76/ac/a7305707cb852b7e16ff80eaf5692309bde30e2b1100a1fcacdc8f731d97/aiosignal-1.3.1-py3-none-any.whl", hash = "sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17"},
     {url = "https://files.pythonhosted.org/packages/ae/67/0952ed97a9793b4958e5736f6d2b346b414a2cd63e82d05940032f45b32f/aiosignal-1.3.1.tar.gz", hash = "sha256:54cd96e15e1649b75d6c87526a6ff0b6c1b0dd3459f43d9ca11d48c339b68cfc"},
+]
+"aniso8601 9.0.1" = [
+    {url = "https://files.pythonhosted.org/packages/cb/72/be3db445b03944bfbb2b02b82d00cb2a2bcf96275c4543f14bf60fa79e12/aniso8601-9.0.1.tar.gz", hash = "sha256:72e3117667eedf66951bb2d93f4296a56b94b078a8a95905a052611fb3f1b973"},
+    {url = "https://files.pythonhosted.org/packages/e3/04/e97c12dc034791d7b504860acfcdd2963fa21ae61eaca1c9d31245f812c3/aniso8601-9.0.1-py2.py3-none-any.whl", hash = "sha256:1d2b7ef82963909e93c4f24ce48d4de9e66009a21bf1c1e1c85bdd0812fe412f"},
 ]
 "arclet-alconna 1.6.6" = [
     {url = "https://files.pythonhosted.org/packages/1e/0e/d36016e6c722029cd073295a4c625473b450399bd293183b76f6c0386018/arclet-alconna-1.6.6.tar.gz", hash = "sha256:a0575d896dea709b7c924d13703960da3d936e595675959a8210e44515ff3105"},
