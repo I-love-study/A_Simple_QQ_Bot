@@ -62,8 +62,9 @@ load_modules_folder: #需要导入的文件夹
   
 ### [番剧时刻表](modules/entertain/anime_timesche.py)
 
-功能介绍：发送B站昨天/今天/明天的番剧时刻表  
-调用办法："anime ('tomorrow'/'yesterday'/'明天'/'昨天')"  
+功能介绍：发送 B站/bangumi 昨天/今天/明天的番剧时刻表  
+调用办法："anime ('tomorrow'/'yesterday'/'明天'/'昨天') ('bilibili'/'bangumi')"  
+默认(当只输入 anime 时): 返回今天B站的番剧时刻表  
 需要第三方模块：aiohttp, pillow
 
 ### [禁言我](modules/entertain/auto_ban.py)
@@ -181,7 +182,8 @@ tips: 你不想装 ujson，你直接把 `import ujson as json` 改成 `import js
 ### [重启](modules/basic/restart.py)
 
 功能介绍：远程重启 bot
-调用办法："重启"（只支持ultra_administration）  
+调用办法："重启"（只支持 ultra_administration ）  
+注意：在 Linux 下要求在 Tmux 内，MacOS 暂时无法使用该功能
 需要的第三方模块：无
 
 ### [信息统计](modules/basic/robot_log.py)
