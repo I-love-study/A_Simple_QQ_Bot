@@ -1,20 +1,21 @@
+import atexit
+import os
+import platform
+import time
+from pathlib import Path
+from typing import Union
+
 from creart import create
 from graia.ariadne.app import Ariadne
+from graia.ariadne.event.lifecycle import ApplicationLaunch
 from graia.ariadne.event.message import GroupMessage
-from graia.ariadne.event.lifecycle import ApplicationLaunched
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.parser.base import MatchContent
 from graia.ariadne.model import Group, Member
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
-from graia.saya import Saya, Channel
-from graiax.shortcut.saya import listen, decorate
-
-from typing import Union
-from pathlib import Path
-import platform
-import time
-import os
+from graia.saya import Channel, Saya
+from graiax.shortcut.saya import decorate, listen
 
 import decorators
 
@@ -33,6 +34,12 @@ class GroupMessageInterrupt(Waiter.create([GroupMessage])):
         if self.group == group.id and self.member == member.id:
             return message
 
+@atexit.register
+def detect_restart():
+    if is_restart and platform.system() == 'Linux' and os.environ.get("TMUX"):
+        # 通过 send keys 让他能够自动关闭 windows
+        os.system("tmux select-pane -U; tmux send-keys exit Enter")
+
 @listen(GroupMessage)
 @decorate(decorators.config_check(active_members=saya.access('all_setting')['ultra_administration']))
 @decorate(MatchContent("重启"))
@@ -49,7 +56,7 @@ async def restart(app: Ariadne, group: Group, message: MessageChain, member:Memb
     if platform.system() == 'Windows':
         os.system('start /i /max main.py')
     elif platform.system() == 'Linux' and os.environ.get("TMUX"):
-        os.system(f'tmux split-window -c {Path().absolute()} pdm run python main.py')
+        os.system(f'tmux split-window -c {Path().absolute()} "pdm run python main.py; $SHELL"')
         is_restart = True
     elif platform.system() == "MACOS":
         await app.send_group_message(group, MessageChain('我不会，长大后再学吧'))
@@ -60,7 +67,7 @@ async def restart(app: Ariadne, group: Group, message: MessageChain, member:Memb
     app.stop()
     exit()
 
-@listen(ApplicationLaunched)
+@listen(ApplicationLaunch)
 async def check_restart(app: Ariadne):
     restart_path = Path('restart_time')
     if restart_path.is_file():
